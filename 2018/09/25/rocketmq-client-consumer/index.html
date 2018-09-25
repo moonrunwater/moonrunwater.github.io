@@ -86,7 +86,7 @@
     root: '/',
     scheme: 'Muse',
     version: '6.4.1',
-    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
     fancybox: false,
     fastclick: false,
     lazyload: false,
@@ -109,18 +109,18 @@
 
 
   <meta name="description" content="rocketmq-client consumer rocketmq 源码版本: 4.3.1">
-<meta name="keywords" content="rocketmq">
+<meta name="keywords" content="rocketmq,源码解析">
 <meta property="og:type" content="article">
-<meta property="og:title" content="rocketmq-client-consumer">
+<meta property="og:title" content="rocketmq consumer 消息消费">
 <meta property="og:url" content="https://moonrunwater.github.io/2018/09/25/rocketmq-client-consumer/index.html">
 <meta property="og:site_name" content="moonrunwater">
 <meta property="og:description" content="rocketmq-client consumer rocketmq 源码版本: 4.3.1">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://moonrunwater.github.io/2018/09/25/rocketmq-client-consumer/消费消息.png">
 <meta property="og:image" content="https://moonrunwater.github.io/2018/09/25/rocketmq-client-consumer/OffsetStore类图.png">
-<meta property="og:updated_time" content="2018-09-25T08:40:43.879Z">
+<meta property="og:updated_time" content="2018-09-25T09:26:29.831Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="rocketmq-client-consumer">
+<meta name="twitter:title" content="rocketmq consumer 消息消费">
 <meta name="twitter:description" content="rocketmq-client consumer rocketmq 源码版本: 4.3.1">
 <meta name="twitter:image" content="https://moonrunwater.github.io/2018/09/25/rocketmq-client-consumer/消费消息.png">
 
@@ -139,7 +139,7 @@
   };
 </script>
 
-  <title>rocketmq-client-consumer | moonrunwater</title>
+  <title>rocketmq consumer 消息消费 | moonrunwater</title>
   
 
 
@@ -331,7 +331,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">rocketmq-client-consumer
+          <h1 class="post-title" itemprop="name headline">rocketmq consumer 消息消费
               
             
           </h1>
@@ -356,7 +356,7 @@
                 
               
 
-              <time title="创建时间：2018-09-25 10:09:00 / 修改时间：16:40:43" itemprop="dateCreated datePublished" datetime="2018-09-25T10:09:00+08:00">2018-09-25</time>
+              <time title="创建时间：2018-09-25 10:09:00 / 修改时间：17:26:29" itemprop="dateCreated datePublished" datetime="2018-09-25T10:09:00+08:00">2018-09-25</time>
             
 
             
@@ -366,6 +366,24 @@
             
           </span>
 
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/rocketmq/" itemprop="url" rel="index"><span itemprop="name">rocketmq</span></a></span>
+
+                
+                
+              
+            </span>
           
 
           
@@ -605,6 +623,8 @@
           
             <a href="/tags/rocketmq/" rel="tag"># rocketmq</a>
           
+            <a href="/tags/源码解析/" rel="tag"># 源码解析</a>
+          
         </div>
       
 
@@ -705,6 +725,19 @@
               
 
               
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                    <span class="site-state-item-count">1</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
 
               
                 
@@ -715,7 +748,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">1</span>
+                      
+                    
+                    <span class="site-state-item-count">2</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
