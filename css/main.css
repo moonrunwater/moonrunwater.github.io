@@ -203,7 +203,7 @@ body {
 }
 @media (min-width: 1200px) {
   body {
-    font-size: 16px;
+    font-size: 14px;
   }
 }
 h1,
@@ -1848,7 +1848,7 @@ pre .javascript .function {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #7cd169;
+  background: #cbfcd6;
 }
 .links-of-blogroll {
   font-size: 13px;
@@ -2472,7 +2472,7 @@ ul.breadcrumb {
   margin: 1em 0;
   padding: 0 2em;
   text-align: center;
-  font-size: 12px;
+  font-size: 10px;
 }
 ul.breadcrumb li {
   display: inline;
