@@ -185,8 +185,8 @@ th {
 }
 body {
   position: relative;
-  font-family: "Microsoft YaHei", Verdana, sans-serif;
-  font-size: 10px;
+  font-family: Lato, "Microsoft YaHei", Verdana, sans-serif;
+  font-size: 12px;
   line-height: 2;
   color: #555;
   background: #fff;
@@ -216,7 +216,7 @@ h6 {
   padding: 0;
   font-weight: bold;
   line-height: 1.5;
-  font-family: Georgia, sans;
+  font-family: Lato, Georgia, sans;
 }
 h1,
 h2,
@@ -514,7 +514,7 @@ pre,
 }
 pre,
 code {
-  font-family: Menlo, Consolas, Monaco, monospace;
+  font-family: Lato, Menlo, Consolas, Monaco, monospace;
 }
 code {
   padding: 2px 4px;
@@ -1256,7 +1256,7 @@ pre .javascript .function {
 .post-body .figure .caption {
   margin: -20px auto 15px;
   text-align: center;
-  font-size: 10px;
+  font-size: 12px;
   color: #999;
   font-weight: bold;
   line-height: 1;
@@ -1848,7 +1848,7 @@ pre .javascript .function {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #05ff7d;
+  background: #b877bf;
 }
 .links-of-blogroll {
   font-size: 13px;
