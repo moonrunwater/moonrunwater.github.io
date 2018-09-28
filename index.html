@@ -373,7 +373,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2018-09-28 15:55:35" itemprop="dateModified" datetime="2018-09-28T15:55:35+08:00">2018-09-28</time>
+                <time title="修改时间：2018-09-28 16:00:59" itemprop="dateModified" datetime="2018-09-28T16:00:59+08:00">2018-09-28</time>
               
             
           </span>
@@ -425,199 +425,28 @@
 
       
         
-          
-          字节序字节序（Byte Order），指的是多字节数据类型，在内存中存储的顺序。计算机系统，采用字节作为逻辑寻址单位。在处理多字节数据类型时，就要区分字节序。
-Big-Endian、Little-Endian
-Big-Endian 大端（高位字节在前）
-
-低位字节存放在内存的高地址端，高位字节存放在内存的低地址端。低地址存放最高有效位（MSB）
-
-Little-Endian 小端（低位字节在前）
-
-          ...
+          <h2 id="字节序"><a href="#字节序" class="headerlink" title="字节序"></a>字节序</h2><p>字节序（Byte Order），指的是<strong>多字节数据类型，在内存中存储的顺序</strong>。<br>计算机系统，采用字节作为逻辑寻址单位。在处理多字节数据类型时，就要区分字节序。</p>
+<h3 id="Big-Endian、Little-Endian"><a href="#Big-Endian、Little-Endian" class="headerlink" title="Big-Endian、Little-Endian"></a>Big-Endian、Little-Endian</h3><ul>
+<li>Big-Endian 大端（高位字节在前）</li>
+</ul>
+<p>低位字节存放在内存的高地址端，高位字节存放在内存的低地址端。<br>低地址存放最高有效位（MSB）</p>
+<ul>
+<li>Little-Endian 小端（低位字节在前）</li>
+</ul>
+<p>低位字节存放在内存的低地址端，高位字节存放在内存的高地址端。<br>低地址存放最低有效位（LSB）</p>
+<p><strong>说明</strong></p>
+<blockquote>
+<ul>
+<li>大端小端的概念，是面向多字节数据类型的内存存储方式定义的，比如2字节、4字节、8字节的整型、长整型、浮点型等，单字节没有字节序的问题。</li>
+<li>“前” 是指靠近内存低地址（起始地址），存储在硬盘上就是先写那个字节。</li>
+<li>内存地址生长方向为: 从前(左)到后(右)，由低地址到高地址 (这是不变的)。</li>
+<li>大端直观，因为与现实生活中，数字书写形式一致: 从前(左)到后(右)，由高位到低位。<br>  小端符合人的思维，低位值小，就应该放在内存地址小的地方，高位值大就应该放在内存地址大的地方。</li>
+</ul>
+</blockquote>
+<h3 id="举个栗子"><a href="#举个栗子" class="headerlink" title="举个栗子"></a>举个栗子</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">以 <span class="number">4</span> 字节整数为例: <span class="number">0x12345678</span></span><br><span class="line"></span><br><span class="line">Big-Endian</span><br><span class="line"></span><br><span class="line">    低地址           高地址</span><br><span class="line">    --------------------&gt;</span><br><span class="line">    +-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">    | <span class="number">12</span> | <span class="number">34</span> | <span class="number">56</span> | <span class="number">78</span> |</span><br><span class="line">    +-+-+-+-+-+-+-+-+-+-+</span><br><span class="line"></span><br><span class="line">Little-Endian</span><br><span class="line"></span><br><span class="line">    低地址           高地址</span><br><span class="line">    --------------------&gt;</span><br><span class="line">    +-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">    | <span class="number">78</span> | <span class="number">56</span> | <span class="number">34</span> | <span class="number">12</span> |</span><br><span class="line">    +-+-+-+-+-+-+-+-+-+-+</span><br></pre></td></tr></table></figure>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2018/09/27/big-endian-and-little-endian/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://moonrunwater.github.io/2018/09/25/rocketmq-broker-2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="moonrunwater">
-      <meta itemprop="description" content="学而不思则罔，思而不学则殆">
-      <meta itemprop="image" content="/images/avatar.jpeg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="moonrunwater">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/09/25/rocketmq-broker-2/" itemprop="url">
-                  源码解析 - rocketmq broker 之 消息存储
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-09-25 17:57:52" itemprop="dateCreated datePublished" datetime="2018-09-25T17:57:52+08:00">2018-09-25</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2018-09-28 15:54:58" itemprop="dateModified" datetime="2018-09-28T15:54:58+08:00">2018-09-28</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/rocketmq/" itemprop="url" rel="index"><span itemprop="name">rocketmq</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-          
-rocketmq 源码版本: 4.3.1
-
-消息存储数据存储
-示例123456789101112131415161718192021222324252627282930313233343536373839404142434445store/├── abort├── checkpoint├── commitlog│   └── 00000000000000000000├── config│   ├
-          ...
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2018/09/25/rocketmq-broker-2/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -736,7 +565,7 @@ rocketmq 源码版本: 4.3.1
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2018-09-28 15:55:07" itemprop="dateModified" datetime="2018-09-28T15:55:07+08:00">2018-09-28</time>
+                <time title="修改时间：2018-09-28 15:58:25" itemprop="dateModified" datetime="2018-09-28T15:58:25+08:00">2018-09-28</time>
               
             
           </span>
@@ -788,16 +617,191 @@ rocketmq 源码版本: 4.3.1
 
       
         
-          
-          
-rocketmq 源码版本: 4.3.1
-
-Broker消息中转角色，负责接收消息，消息存储，转发消息，一般也称为 Message Server。JMS 规范中，称为 Provider。
-源码解析Broker 启动BrokerStartup123456789101112131415161718192021222324252627public static void main(String[] a
-          ...
+          <blockquote>
+<p>rocketmq 源码版本: 4.3.1</p>
+</blockquote>
+<h2 id="Broker"><a href="#Broker" class="headerlink" title="Broker"></a>Broker</h2><p>消息中转角色，负责接收消息，消息存储，转发消息，一般也称为 Message Server。<br>JMS 规范中，称为 Provider。</p>
+<h2 id="源码解析"><a href="#源码解析" class="headerlink" title="源码解析"></a>源码解析</h2><h3 id="Broker-启动"><a href="#Broker-启动" class="headerlink" title="Broker 启动"></a>Broker 启动</h3><h4 id="BrokerStartup"><a href="#BrokerStartup" class="headerlink" title="BrokerStartup"></a>BrokerStartup</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    start(createBrokerController(args));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> BrokerController <span class="title">createBrokerController</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="keyword">final</span> BrokerController controller = <span class="keyword">new</span> BrokerController(</span><br><span class="line">        brokerConfig,</span><br><span class="line">        nettyServerConfig,</span><br><span class="line">        nettyClientConfig,</span><br><span class="line">        messageStoreConfig);</span><br><span class="line">    <span class="comment">// remember all configs to prevent discard</span></span><br><span class="line">    controller.getConfiguration().registerConfig(properties);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">boolean</span> initResult = controller.initialize();</span><br><span class="line">    <span class="keyword">if</span> (!initResult) &#123;</span><br><span class="line">        controller.shutdown();</span><br><span class="line">        System.exit(-<span class="number">3</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> BrokerController <span class="title">start</span><span class="params">(BrokerController controller)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    controller.start();</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2018/09/25/rocketmq-broker-1/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://moonrunwater.github.io/2018/09/25/rocketmq-broker-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="moonrunwater">
+      <meta itemprop="description" content="学而不思则罔，思而不学则殆">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="moonrunwater">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/09/25/rocketmq-broker-2/" itemprop="url">
+                  源码解析 - rocketmq broker 之 消息存储
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-09-25 17:57:52" itemprop="dateCreated datePublished" datetime="2018-09-25T17:57:52+08:00">2018-09-25</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-09-28 16:00:25" itemprop="dateModified" datetime="2018-09-28T16:00:25+08:00">2018-09-28</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/rocketmq/" itemprop="url" rel="index"><span itemprop="name">rocketmq</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <blockquote>
+<p>rocketmq 源码版本: 4.3.1</p>
+</blockquote>
+<h2 id="消息存储"><a href="#消息存储" class="headerlink" title="消息存储"></a>消息存储</h2><h3 id="数据存储"><a href="#数据存储" class="headerlink" title="数据存储"></a>数据存储</h3><p><img src="/2018/09/25/rocketmq-broker-2/rocketmq数据存储.png" alt="rocketmq数据存储"></p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/09/25/rocketmq-broker-2/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -916,7 +920,7 @@ Broker消息中转角色，负责接收消息，消息存储，转发消息，�
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2018-09-28 15:54:49" itemprop="dateModified" datetime="2018-09-28T15:54:49+08:00">2018-09-28</time>
+                <time title="修改时间：2018-09-28 16:00:42" itemprop="dateModified" datetime="2018-09-28T16:00:42+08:00">2018-09-28</time>
               
             
           </span>
@@ -968,17 +972,19 @@ Broker消息中转角色，负责接收消息，消息存储，转发消息，�
 
       
         
-          
-          
-rocketmq 源码版本: 4.3.1
-
-ConsumerConsumer Group
-Consumer 的 groupName 用于把多个 Consumer 组织到一起，提高并发处理能力、可靠性，groupName需要和消息模式 (MessageModel) 配合使用。
-
-rocketmq 支持两种消息模式 (MessageModel): CLUSTERING、BROADCASTING。
-
-
-          ...
+          <blockquote>
+<p>rocketmq 源码版本: 4.3.1</p>
+</blockquote>
+<h2 id="Consumer"><a href="#Consumer" class="headerlink" title="Consumer"></a>Consumer</h2><h3 id="Consumer-Group"><a href="#Consumer-Group" class="headerlink" title="Consumer Group"></a>Consumer Group</h3><ul>
+<li><p>Consumer 的 groupName 用于把多个 Consumer 组织到一起，提高并发处理能力、可靠性，groupName需要和消息模式 (MessageModel) 配合使用。</p>
+</li>
+<li><p>rocketmq 支持两种消息模式 (MessageModel): CLUSTERING、BROADCASTING。</p>
+<ul>
+<li>在 CLUSTERING 模式下，同一个 consumerGroup (groupName 相同) 里的每个 Consumer 实例 (进程)，只消费所订阅消息的一部分内容，同一个 Consumer Group 里所有的 Consumer 实例消费的内容合起来才是所订阅 Topic 内容的整体，从而达到负载均衡的目的。</li>
+<li>在 BROADCASTING 模式下，同一个 Consumer Group 里的每个 Consumer 都能消费到所订阅 Topic 的全部消息，也就是一个消息会被多次分发，被多个 Consumer 消费，也即 BROADCASTING 模式下，Consumer Group 无意义。</li>
+</ul>
+</li>
+</ul>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2018/09/25/rocketmq-client-consumer/#more" rel="contents">
@@ -1100,7 +1106,7 @@ rocketmq 支持两种消息模式 (MessageModel): CLUSTERING、BROADCASTING。
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2018-09-28 15:54:37" itemprop="dateModified" datetime="2018-09-28T15:54:37+08:00">2018-09-28</time>
+                <time title="修改时间：2018-09-28 16:00:39" itemprop="dateModified" datetime="2018-09-28T16:00:39+08:00">2018-09-28</time>
               
             
           </span>
@@ -1152,12 +1158,12 @@ rocketmq 支持两种消息模式 (MessageModel): CLUSTERING、BROADCASTING。
 
       
         
-          
-          
-rocketmq 源码版本: 4.3.1
-
-示例: 同步发送消息1234567891011121314151617181920212223242526272829303132333435363738394041424344454647/** * Send Messages Synchronously * Reliable synchronous transmission is used in e
-          ...
+          <blockquote>
+<p>rocketmq 源码版本: 4.3.1</p>
+</blockquote>
+<h2 id="示例-同步发送消息"><a href="#示例-同步发送消息" class="headerlink" title="示例: 同步发送消息"></a>示例: 同步发送消息</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Send Messages Synchronously</span></span><br><span class="line"><span class="comment"> * Reliable synchronous transmission is used in extensive scenes,</span></span><br><span class="line"><span class="comment"> * such as important notification messages, SMS notification, SMS marketing system, etc..</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Producer</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> MQClientException, InterruptedException </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Instantiate with a producer group name.</span></span><br><span class="line">        DefaultMQProducer producer = <span class="keyword">new</span> DefaultMQProducer(<span class="string">"producer_group_huohu_rocketmq_test"</span>);</span><br><span class="line">        <span class="comment">// Specify name server addresses.</span></span><br><span class="line">        producer.setNamesrvAddr(<span class="string">"mq-stg.helijia.com:9876"</span>);</span><br><span class="line">        <span class="comment">// rocketmq-client 默认开启了 vip 通道，vip 通道端口为 10911-2=10909</span></span><br><span class="line">        <span class="comment">// 若 rocketmq-broker 未开启 vip 通道，则报 connect to &lt;......:10909&gt; failed</span></span><br><span class="line">        producer.setVipChannelEnabled(<span class="keyword">false</span>);</span><br><span class="line">        producer.setInstanceName(<span class="string">"producer_instance_"</span> + System.currentTimeMillis());</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Launch the instance.</span></span><br><span class="line">        producer.start();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">16</span>; i++) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="comment">// Create a message instance, specifying topic, tag and message body.</span></span><br><span class="line">                Message msg = <span class="keyword">new</span> Message(<span class="string">"topic_huohu_test_simple_message_syn"</span>,</span><br><span class="line">                        <span class="string">"tag_a"</span>,</span><br><span class="line">                        <span class="string">"key_order_888888_"</span> + i,</span><br><span class="line">                        (<span class="string">"Hello RocketMQ"</span> + i).getBytes(RemotingHelper.DEFAULT_CHARSET));</span><br><span class="line"></span><br><span class="line">                <span class="comment">// Call send message to deliver message to one of brokers.</span></span><br><span class="line">                SendResult sendResult = producer.send(msg);</span><br><span class="line">                System.out.printf(<span class="string">"%s%n"</span>, sendResult);</span><br><span class="line"></span><br><span class="line">                <span class="comment">// Send Messages in One-way Mode</span></span><br><span class="line">                <span class="comment">// One-way transmission is used for cases requiring moderate reliability, such as log collection.</span></span><br><span class="line">                <span class="comment">// producer.sendOneway(msg);</span></span><br><span class="line"></span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        Thread.sleep(<span class="number">1</span> * <span class="number">60</span> * <span class="number">1000L</span>);</span><br><span class="line"></span><br><span class="line">        producer.shutdown();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="概览"><a href="#概览" class="headerlink" title="概览"></a>概览</h2><h3 id="模块交互"><a href="#模块交互" class="headerlink" title="模块交互"></a>模块交互</h3><p><img src="/2018/09/25/rocketmq-client-producer/Producer发送消息模块交互图.png" alt="Producer 发送消息模块交互图"></p>
+<h3 id="发送消息"><a href="#发送消息" class="headerlink" title="发送消息"></a>发送消息</h3><p><img src="/2018/09/25/rocketmq-client-producer/Producer发送消息时序图.png" alt="Producer 发送消息时序图"></p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2018/09/25/rocketmq-client-producer/#more" rel="contents">
@@ -1279,7 +1285,7 @@ rocketmq 源码版本: 4.3.1
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2018-09-28 15:54:21" itemprop="dateModified" datetime="2018-09-28T15:54:21+08:00">2018-09-28</time>
+                <time title="修改时间：2018-09-28 16:00:35" itemprop="dateModified" datetime="2018-09-28T16:00:35+08:00">2018-09-28</time>
               
             
           </span>
@@ -1331,31 +1337,28 @@ rocketmq 源码版本: 4.3.1
 
       
         
-          
-          消息队列FIFO
-异步解耦、流量削峰、消息分发
-
-异步解耦
-
-对分布式应用进行异步解耦，增加应用的水平扩展能力。 
-基于 生产者、消费者 模式
-
-
-削峰填谷
-
-大促等流量洪流突然来袭时，MQ 可以缓冲突发流量，避免下游订阅系统因突发流量崩溃。
-基于 队列 缓冲
-
-
-消息分发
-
-一对多，多对多 消息分发
-基于 发布/订阅 模型
-
-
-
-rocketmq 发展历程2010年，Alibaba 开始大规模使
-          ...
+          <h2 id="消息队列"><a href="#消息队列" class="headerlink" title="消息队列"></a>消息队列</h2><p>FIFO</p>
+<p>异步解耦、流量削峰、消息分发</p>
+<ul>
+<li><p>异步解耦</p>
+<ul>
+<li>对分布式应用进行异步解耦，增加应用的水平扩展能力。 </li>
+<li>基于 <strong>生产者、消费者</strong> 模式</li>
+</ul>
+</li>
+<li><p>削峰填谷</p>
+<ul>
+<li>大促等流量洪流突然来袭时，MQ 可以缓冲突发流量，避免下游订阅系统因突发流量崩溃。</li>
+<li>基于 <strong>队列</strong> 缓冲</li>
+</ul>
+</li>
+<li><p>消息分发</p>
+<ul>
+<li>一对多，多对多 消息分发</li>
+<li>基于 <strong>发布/订阅</strong> 模型</li>
+</ul>
+</li>
+</ul>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2018/09/25/rocketmq/#more" rel="contents">
@@ -1477,7 +1480,7 @@ rocketmq 发展历程2010年，Alibaba 开始大规模使
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2018-09-28 15:54:13" itemprop="dateModified" datetime="2018-09-28T15:54:13+08:00">2018-09-28</time>
+                <time title="修改时间：2018-09-28 16:00:32" itemprop="dateModified" datetime="2018-09-28T16:00:32+08:00">2018-09-28</time>
               
             
           </span>
@@ -1529,14 +1532,9 @@ rocketmq 发展历程2010年，Alibaba 开始大规模使
 
       
         
-          
-          之前为什么不写水平一般写博客，主要是记录心声，分享技术。觉得自己水平一般，还有很多东西要学习，先沉淀下来充实自己。
-耗费时间写技术博客，是特别耗费时间的事情。
-如果只是帮助自己理解，记录自己的心得，有道云笔记是个更好的选择。这样，可以有更多的时间，学点新东西。
-现在为什么写记录自己的心声记录自己的心声，给心灵安一个家。
-老早就想有个自己的博客，今日终于得偿所愿！虚荣心得到极大满足！😂😂😂
-分
-          ...
+          <h2 id="之前为什么不写"><a href="#之前为什么不写" class="headerlink" title="之前为什么不写"></a>之前为什么不写</h2><h3 id="水平一般"><a href="#水平一般" class="headerlink" title="水平一般"></a>水平一般</h3><p>写博客，主要是记录心声，分享技术。<br>觉得自己水平一般，还有很多东西要学习，先沉淀下来充实自己。</p>
+<h3 id="耗费时间"><a href="#耗费时间" class="headerlink" title="耗费时间"></a>耗费时间</h3><p>写技术博客，是特别耗费时间的事情。</p>
+<p>如果只是帮助自己理解，记录自己的心得，有道云笔记是个更好的选择。<br>这样，可以有更多的时间，学点新东西。</p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2018/09/23/why-blog/#more" rel="contents">

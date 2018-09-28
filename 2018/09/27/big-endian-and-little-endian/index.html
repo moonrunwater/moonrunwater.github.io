@@ -116,7 +116,7 @@
 <meta property="og:site_name" content="moonrunwater">
 <meta property="og:description" content="字节序字节序（Byte Order），指的是多字节数据类型，在内存中存储的顺序。计算机系统，采用字节作为逻辑寻址单位。在处理多字节数据类型时，就要区分字节序。 Big-Endian、Little-Endian Big-Endian 大端（高位字节在前）  低位字节存放在内存的高地址端，高位字节存放在内存的低地址端。低地址存放最高有效位（MSB）  Little-Endian 小端（低位字节在前）">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2018-09-28T07:55:35.592Z">
+<meta property="og:updated_time" content="2018-09-28T08:00:59.269Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="大端小端">
 <meta name="twitter:description" content="字节序字节序（Byte Order），指的是多字节数据类型，在内存中存储的顺序。计算机系统，采用字节作为逻辑寻址单位。在处理多字节数据类型时，就要区分字节序。 Big-Endian、Little-Endian Big-Endian 大端（高位字节在前）  低位字节存放在内存的高地址端，高位字节存放在内存的低地址端。低地址存放最高有效位（MSB）  Little-Endian 小端（低位字节在前）">
@@ -370,7 +370,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2018-09-28 15:55:35" itemprop="dateModified" datetime="2018-09-28T15:55:35+08:00">2018-09-28</time>
+                <time title="修改时间：2018-09-28 16:00:59" itemprop="dateModified" datetime="2018-09-28T16:00:59+08:00">2018-09-28</time>
               
             
           </span>
@@ -440,6 +440,7 @@
 </ul>
 </blockquote>
 <h3 id="举个栗子"><a href="#举个栗子" class="headerlink" title="举个栗子"></a>举个栗子</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">以 <span class="number">4</span> 字节整数为例: <span class="number">0x12345678</span></span><br><span class="line"></span><br><span class="line">Big-Endian</span><br><span class="line"></span><br><span class="line">    低地址           高地址</span><br><span class="line">    --------------------&gt;</span><br><span class="line">    +-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">    | <span class="number">12</span> | <span class="number">34</span> | <span class="number">56</span> | <span class="number">78</span> |</span><br><span class="line">    +-+-+-+-+-+-+-+-+-+-+</span><br><span class="line"></span><br><span class="line">Little-Endian</span><br><span class="line"></span><br><span class="line">    低地址           高地址</span><br><span class="line">    --------------------&gt;</span><br><span class="line">    +-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">    | <span class="number">78</span> | <span class="number">56</span> | <span class="number">34</span> | <span class="number">12</span> |</span><br><span class="line">    +-+-+-+-+-+-+-+-+-+-+</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
 <h3 id="MSB、LSB"><a href="#MSB、LSB" class="headerlink" title="MSB、LSB"></a>MSB、LSB</h3><ul>
 <li>最高有效位 MSB: Most Significant Bit</li>
 </ul>
@@ -506,8 +507,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/09/25/rocketmq-broker-2/" rel="next" title="源码解析 - rocketmq broker 之 消息存储">
-                <i class="fa fa-chevron-left"></i> 源码解析 - rocketmq broker 之 消息存储
+              <a href="/2018/09/25/rocketmq-broker-1/" rel="next" title="源码解析 - rocketmq broker 之 处理请求(消息/拉取消息)">
+                <i class="fa fa-chevron-left"></i> 源码解析 - rocketmq broker 之 处理请求(消息/拉取消息)
               </a>
             
           </div>

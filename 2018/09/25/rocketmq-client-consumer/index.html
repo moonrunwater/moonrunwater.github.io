@@ -118,7 +118,7 @@
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://moonrunwater.github.io/2018/09/25/rocketmq-client-consumer/消费消息.png">
 <meta property="og:image" content="https://moonrunwater.github.io/2018/09/25/rocketmq-client-consumer/OffsetStore类图.png">
-<meta property="og:updated_time" content="2018-09-28T07:54:49.095Z">
+<meta property="og:updated_time" content="2018-09-28T08:00:42.599Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="源码解析 - rocketmq consumer 消费消息">
 <meta name="twitter:description" content="rocketmq 源码版本: 4.3.1  ConsumerConsumer Group Consumer 的 groupName 用于把多个 Consumer 组织到一起，提高并发处理能力、可靠性，groupName需要和消息模式 (MessageModel) 配合使用。  rocketmq 支持两种消息模式 (MessageModel): CLUSTERING、BROADCASTING。">
@@ -373,7 +373,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2018-09-28 15:54:49" itemprop="dateModified" datetime="2018-09-28T15:54:49+08:00">2018-09-28</time>
+                <time title="修改时间：2018-09-28 16:00:42" itemprop="dateModified" datetime="2018-09-28T16:00:42+08:00">2018-09-28</time>
               
             
           </span>
@@ -437,6 +437,7 @@
 </ul>
 </li>
 </ul>
+<a id="more"></a>
 <h3 id="PUSH-PULL-LONG-POLLING"><a href="#PUSH-PULL-LONG-POLLING" class="headerlink" title="PUSH, PULL, LONG POLLING"></a>PUSH, PULL, LONG POLLING</h3><h4 id="PUSH"><a href="#PUSH" class="headerlink" title="PUSH"></a>PUSH</h4><p>PUSH 方式是 server 端接收到消息后，主动把消息推送给 client 端，实时性高。<br>但对于<strong>消息队列</strong>服务来说，用 PUSH 方式主动推送有些弊端:</p>
 <ul>
 <li>加大了 server 端的工作量，进而影响了 server 的性能;</li>
@@ -660,8 +661,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2018/09/25/rocketmq-broker-1/" rel="prev" title="源码解析 - rocketmq broker 之 处理请求(消息/拉取消息)">
-                源码解析 - rocketmq broker 之 处理请求(消息/拉取消息) <i class="fa fa-chevron-right"></i>
+              <a href="/2018/09/25/rocketmq-broker-2/" rel="prev" title="源码解析 - rocketmq broker 之 消息存储">
+                源码解析 - rocketmq broker 之 消息存储 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
