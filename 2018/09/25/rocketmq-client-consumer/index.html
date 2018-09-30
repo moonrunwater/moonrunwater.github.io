@@ -108,20 +108,20 @@
 
 
 
-  <meta name="description" content="[TOC]   rocketmq 源码版本: 4.3.1  ConsumerConsumer Group Consumer 的 groupName 用于把多个 Consumer 组织到一起，提高并发处理能力、可靠性，groupName需要和消息模式 (MessageModel) 配合使用。  rocketmq 支持两种消息模式 (MessageModel): CLUSTERING、BROADCAS">
+  <meta name="description" content="rocketmq 源码版本: 4.3.1  ConsumerConsumer Group Consumer 的 groupName 用于把多个 Consumer 组织到一起，提高并发处理能力、可靠性，groupName需要和消息模式 (MessageModel) 配合使用。  rocketmq 支持两种消息模式 (MessageModel): CLUSTERING、BROADCASTING。">
 <meta name="keywords" content="rocketmq,源码解析">
 <meta property="og:type" content="article">
 <meta property="og:title" content="源码解析 - rocketmq consumer 消费消息">
 <meta property="og:url" content="https://moonrunwater.github.io/2018/09/25/rocketmq-client-consumer/index.html">
 <meta property="og:site_name" content="moonrunwater">
-<meta property="og:description" content="[TOC]   rocketmq 源码版本: 4.3.1  ConsumerConsumer Group Consumer 的 groupName 用于把多个 Consumer 组织到一起，提高并发处理能力、可靠性，groupName需要和消息模式 (MessageModel) 配合使用。  rocketmq 支持两种消息模式 (MessageModel): CLUSTERING、BROADCAS">
+<meta property="og:description" content="rocketmq 源码版本: 4.3.1  ConsumerConsumer Group Consumer 的 groupName 用于把多个 Consumer 组织到一起，提高并发处理能力、可靠性，groupName需要和消息模式 (MessageModel) 配合使用。  rocketmq 支持两种消息模式 (MessageModel): CLUSTERING、BROADCASTING。">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://moonrunwater.github.io/2018/09/25/rocketmq-client-consumer/消费消息.png">
 <meta property="og:image" content="https://moonrunwater.github.io/2018/09/25/rocketmq-client-consumer/OffsetStore类图.png">
-<meta property="og:updated_time" content="2018-09-30T01:18:58.596Z">
+<meta property="og:updated_time" content="2018-09-30T01:25:28.843Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="源码解析 - rocketmq consumer 消费消息">
-<meta name="twitter:description" content="[TOC]   rocketmq 源码版本: 4.3.1  ConsumerConsumer Group Consumer 的 groupName 用于把多个 Consumer 组织到一起，提高并发处理能力、可靠性，groupName需要和消息模式 (MessageModel) 配合使用。  rocketmq 支持两种消息模式 (MessageModel): CLUSTERING、BROADCAS">
+<meta name="twitter:description" content="rocketmq 源码版本: 4.3.1  ConsumerConsumer Group Consumer 的 groupName 用于把多个 Consumer 组织到一起，提高并发处理能力、可靠性，groupName需要和消息模式 (MessageModel) 配合使用。  rocketmq 支持两种消息模式 (MessageModel): CLUSTERING、BROADCASTING。">
 <meta name="twitter:image" content="https://moonrunwater.github.io/2018/09/25/rocketmq-client-consumer/消费消息.png">
 
 
@@ -373,7 +373,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2018-09-30 09:18:58" itemprop="dateModified" datetime="2018-09-30T09:18:58+08:00">2018-09-30</time>
+                <time title="修改时间：2018-09-30 09:25:28" itemprop="dateModified" datetime="2018-09-30T09:25:28+08:00">2018-09-30</time>
               
             
           </span>
@@ -424,9 +424,7 @@
       
 
       
-        <p>[TOC]</p>
-<hr>
-<blockquote>
+        <blockquote>
 <p>rocketmq 源码版本: 4.3.1</p>
 </blockquote>
 <h2 id="Consumer"><a href="#Consumer" class="headerlink" title="Consumer"></a>Consumer</h2><h3 id="Consumer-Group"><a href="#Consumer-Group" class="headerlink" title="Consumer Group"></a>Consumer Group</h3><ul>
