@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.1" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.1" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.4.1',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="摘要:">
+<meta name="keywords" content="nio">
+<meta property="og:type" content="article">
+<meta property="og:title" content="nio-intro">
+<meta property="og:url" content="https://moonrunwater.github.io/2018/11/10/nio-intro/index.html">
+<meta property="og:site_name" content="moonrunwater">
+<meta property="og:description" content="摘要:">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://moonrunwater.github.io/2018/11/10/nio-intro/服务端处理网络请求流程图.png">
+<meta property="og:image" content="https://moonrunwater.github.io/2018/11/10/nio-intro/blocking-io.png">
+<meta property="og:image" content="https://moonrunwater.github.io/2018/11/10/nio-intro/nonblocking-io.png">
+<meta property="og:image" content="https://moonrunwater.github.io/2018/11/10/nio-intro/multiplexing-io.png">
+<meta property="og:image" content="https://moonrunwater.github.io/2018/11/10/nio-intro/signal-driven-io.png">
+<meta property="og:image" content="https://moonrunwater.github.io/2018/11/10/nio-intro/asyn-io.png">
+<meta property="og:image" content="https://moonrunwater.github.io/2018/11/10/nio-intro/io-comparison.png">
+<meta property="og:image" content="https://moonrunwater.github.io/2018/11/10/nio-intro/Buffer-hierarchy.png">
+<meta property="og:image" content="https://moonrunwater.github.io/2018/11/10/nio-intro/single-threaded-version.png">
+<meta property="og:image" content="https://moonrunwater.github.io/2018/11/10/nio-intro/worker-thread-pools.png">
+<meta property="og:image" content="https://moonrunwater.github.io/2018/11/10/nio-intro/multiple-reactor-threads.png">
+<meta property="og:updated_time" content="2018-12-06T18:13:47.273Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="nio-intro">
+<meta name="twitter:description" content="摘要:">
+<meta name="twitter:image" content="https://moonrunwater.github.io/2018/11/10/nio-intro/服务端处理网络请求流程图.png">
+
+
+
+
+
+
+  <link rel="canonical" href="https://moonrunwater.github.io/2018/11/10/nio-intro/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>nio-intro | moonrunwater</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <a href="https://github.com/moonrunwater" class="github-corner" aria-label="View source on Github"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">moonrunwater</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">路漫漫其修远兮，吾将上下而求索</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+    <a href="/about/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-user"></i> <br />关于</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://moonrunwater.github.io/2018/11/10/nio-intro/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="moonrunwater">
+      <meta itemprop="description" content="学而不思则罔，思而不学则殆">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="moonrunwater">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">nio-intro
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-11-10 15:31:12" itemprop="dateCreated datePublished" datetime="2018-11-10T15:31:12+08:00">2018-11-10</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-12-07 02:13:47" itemprop="dateModified" datetime="2018-12-07T02:13:47+08:00">2018-12-07</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/nio/" itemprop="url" rel="index"><span itemprop="name">nio</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2018/11/10/nio-intro/" class="leancloud_visitors" data-flag-title="nio-intro">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>摘要: </p>
+<a id="more"></a>
+<h2 id="Unix-Linux-IO"><a href="#Unix-Linux-IO" class="headerlink" title="Unix/Linux IO"></a>Unix/Linux IO</h2><h3 id="服务端处理网络请求"><a href="#服务端处理网络请求" class="headerlink" title="服务端处理网络请求"></a>服务端处理网络请求</h3><p>服务端处理网络请求的典型过程：<br><img src="/2018/11/10/nio-intro/服务端处理网络请求流程图.png" alt="服务端处理网络请求流程图"></p>
+<p>一个输入操作通常包括两个不同的阶段：</p>
+<ul>
+<li>等待数据准备好</li>
+<li>从内核向用户进程复制数据</li>
+</ul>
+<p>第一步通常涉及等待数据从网络中到达。当所等待分组到达时，它被复制到内核中的某个缓冲区。<br>第二步就是把数据从内核缓冲区复制到应用进程缓冲区</p>
+<p>Intel CPU 提供Ring0-Ring3四种级别的运行模式，Ring0级别最高，Ring3最低。Linux使用了Ring3级别运行用户态，Ring0作为内核态。Ring3状态不能访问Ring0的地址空间，包括代码和数据。因此用户态是没有权限去操作内核态的资源的，它只能通过系统调用外完成用户态到内核态的切换，然后在完成相关操作后再有内核态切换回用户态。</p>
+<p>应用程序在系统调用完成上面2步操作时，调用方式的阻塞、非阻塞，操作系统在处理应用程序请求时处理方式的同步、异步处理的不同，参考 <strong>《UNIX网络编程.卷1》</strong>，可以分为5种I/O模型</p>
+<h3 id="IO模型"><a href="#IO模型" class="headerlink" title="IO模型"></a>IO模型</h3><h4 id="1-阻塞式I-O模型-blocking-I-O）"><a href="#1-阻塞式I-O模型-blocking-I-O）" class="headerlink" title="1. 阻塞式I/O模型(blocking I/O）"></a>1. 阻塞式I/O模型(blocking I/O）</h4><p><img src="/2018/11/10/nio-intro/blocking-io.png" alt="blocking-io"></p>
+<p>在阻塞式I/O模型中，应用程序在从调用recvfrom开始到它返回有数据报准备好这段时间是阻塞的，recvfrom返回成功后，应用进程开始处理数据报。</p>
+<p><strong>比喻</strong> 一个人在钓鱼，当没鱼上钩时，就坐在岸边一直等<br><strong>优点</strong> 线程模型简单，方便开发<br><strong>缺点</strong> 每个连接需要独立的进程/线程单独处理，当并发请求量大时为了维护程序，内存、线程频繁切换开销较大</p>
+<h4 id="2-非阻塞式I-O模型-non-blocking-I-O）"><a href="#2-非阻塞式I-O模型-non-blocking-I-O）" class="headerlink" title="2. 非阻塞式I/O模型(non-blocking I/O）"></a>2. 非阻塞式I/O模型(non-blocking I/O）</h4><p><img src="/2018/11/10/nio-intro/nonblocking-io.png" alt="nonblocking-io"></p>
+<p>在非阻塞式I/O模型中，应用程序把一个套接字设置为非阻塞就是告诉内核，当所请求的I/O操作无法完成时，不要将进程睡眠，而是返回一个错误，应用程序基于I/O操作函数将不断的轮询数据是否已经准备好，如果没有准备好，继续轮询，直到数据准备好为止。</p>
+<p><strong>比喻</strong> 边钓鱼边玩手机，隔会再看看有没有鱼上钩，有的话就迅速拉杆<br><strong>优点</strong> 不会阻塞在内核的等待数据过程，每次发起的I/O请求可以立即返回，不用阻塞等待，实时性较好<br><strong>缺点</strong> 轮询将会不断地询问内核，这将占用大量的CPU时间，系统资源利用率较低，所以一般情况不会使用这种I/O模型</p>
+<h4 id="3-I-O复用模型-I-O-multiplexing）"><a href="#3-I-O复用模型-I-O-multiplexing）" class="headerlink" title="3. I/O复用模型(I/O multiplexing）"></a>3. I/O复用模型(I/O multiplexing）</h4><p><img src="/2018/11/10/nio-intro/multiplexing-io.png" alt="multiplexing-io"></p>
+<p>在I/O复用模型中，select 系统调用也会使进程阻塞，但是和阻塞I/O所不同的的，阻塞在 select 系统调用上，等待多个套接字中的任一个变为可读，而不是阻塞在真正的 I/O 系统调用 recvfrom 上。</p>
+<p><strong>比喻</strong> 放了一堆鱼竿，在岸边一直守着这堆鱼竿，直到有鱼上钩<br><strong>优点</strong> 可以基于一个阻塞对象，同时在多个描述符上等待就绪，而不是使用多个线程(每个文件描述符一个线程)，这样可以大大节省系统资源<br><strong>缺点</strong> 当连接数较少时效率相比多线程+阻塞I/O模型效率较低，可能延迟更大，因为单个连接处理需要2次系统调用 (select + recvfrom)，占用时间会有增加</p>
+<p><strong>疑问 ?</strong><br>I/O 复用模型，I/O 本身的调用是非阻塞的吧！</p>
+<p>scalable I/O event notification mechanism:</p>
+<ul>
+<li>POSIX: select, poll</li>
+<li>Linux: epoll</li>
+<li>FreeBSD: kqueue (macOS)</li>
+</ul>
+<p>select：上世纪 80 年代就实现了，它支持注册 FD_SETSIZE(1024) 个 socket，在那个年代肯定是够用的，现在肯定是不行的。</p>
+<p>poll：1997 年，出现了 poll 作为 select 的替代者，最大的区别就是，poll 不再限制 socket 数量。</p>
+<p>select 和 poll 都有一个共同的问题，那就是它们都只会告诉你有几个通道准备好了，但是不会告诉你具体是哪几个通道。所以，一旦知道有通道准备好以后，自己还是需要进行一次扫描，显然这个不太好，通道少的时候还行，一旦通道的数量是几十万个以上的时候，扫描一次的时间都很可观了，时间复杂度 O(n)。所以，后来才催生了以下实现。</p>
+<p><a href="https://en.wikipedia.org/wiki/Epoll" target="_blank" rel="noopener">epoll</a>：2002 年随 Linux 内核 2.5.44 发布，epoll 能直接返回具体的准备好的通道，时间复杂度 O(1)。</p>
+<p>除了 Linux 中的 epoll，2000 年 FreeBSD 出现了 Kqueue，还有就是，Solaris 中有 /dev/poll。</p>
+<p>Windows 平台的非阻塞 IO 使用的是 select，但是 Windows 中 IOCP 提供的异步 IO 非常强大。</p>
+<h4 id="4-信号驱动式I-O模型（signal-driven-I-O-ˈdrɪvn"><a href="#4-信号驱动式I-O模型（signal-driven-I-O-ˈdrɪvn" class="headerlink" title="4. 信号驱动式I/O模型（signal-driven I/O) [ˈdrɪvn]"></a>4. 信号驱动式I/O模型（signal-driven I/O) [ˈdrɪvn]</h4><p><img src="/2018/11/10/nio-intro/signal-driven-io.png" alt="signal-driven-io"></p>
+<p>应用程序首先开启套接字的信号驱动式I/O功能，并通过sigaction系统调用安装一个信号处理函数，该系统调用将立即返回，进程继续运行并不阻塞。当数据准备好时，进程会收到内核产生的一个SIGIO信号，随后可以在信号处理函数中调用I/O操作函数 recvfrom 读取数据。</p>
+<p><strong>比喻</strong> 鱼竿上系了个铃铛，当铃铛响，就知道鱼上钩，然后可以专心玩手机</p>
+<h4 id="5-异步I-O模型（asynchronous-I-O）"><a href="#5-异步I-O模型（asynchronous-I-O）" class="headerlink" title="5. 异步I/O模型（asynchronous I/O）"></a>5. 异步I/O模型（asynchronous I/O）</h4><p><img src="/2018/11/10/nio-intro/asyn-io.png" alt="asyn-io"></p>
+<p>由POSIX规范定义，应用程序告知内核启动某个操作，并让内核在整个操作（包括将数据从内核复制到应用程序自己的缓冲区）完成后通知应用程序。这种模型与信号驱动模型的主要区别在于：信号驱动I/O是由内核通知应用程序何时启动一个I/O操作，而异步I/O模型是由内核通知应用程序I/O操作何时完成。</p>
+<p><strong>优点</strong> 系统资源利用率高<br><strong>缺点</strong> 要实现真正的异步 I/O，操作系统需要做大量的工作。目前 Windows 下通过 IOCP 实现了真正的异步 I/O，而在 Linux 系统下，Linux2.6才引入，目前 AIO 并不完善，因此在 Linux 下实现高并发网络编程时都是以 IO复用模型模式为主。</p>
+<h4 id="5种I-O模型总结"><a href="#5种I-O模型总结" class="headerlink" title="5种I/O模型总结"></a>5种I/O模型总结</h4><p><img src="/2018/11/10/nio-intro/io-comparison.png" alt="io-comparison"></p>
+<p>POSIX 对同步I/O、异步I/O 这两个术语的定义如下：</p>
+<ul>
+<li>A synchronous I/O operation causes the requesting process to be blocked until that I/O operation completes. 同步I/O在直到 I/O 操作完成期间，会导致请求进程阻塞</li>
+<li>An asynchronous I/O operation does not cause the requesting process to be blocked. 异步I/O在直到 I/O 操作完成期间，都不会导致请求进程阻塞</li>
+</ul>
+<p>从上图中我们可以看出，可以看出，越往后，阻塞越少，理论上效率也是最优。其五种I/O模型中，前四种属于同步I/O，因为其中真正的I/O操作(recvfrom)将阻塞进程/线程，只有异步I/O模型才于POSIX定义的异步I/O相匹配。</p>
+<p>I/O 复用模型 与 AIO 相比，就是多了一层从内核copy数据到应用空间的阻塞，从而不能算作asynchronous I/O类。但是，这层小小的阻塞无足轻重。</p>
+<h2 id="NIO"><a href="#NIO" class="headerlink" title="NIO"></a>NIO</h2><p>官方称之为 New IO，也有人称之为 Non-Blocking IO。<br>NIO 对应的是上面 I/O复用模型(I/O multiplexing）。<br>有些人喜欢将 NIO 称为 异步非阻塞 IO，但是如果严格按照 POSIX 定义，它并不是异步 IO。<br>不过也不必纠结于术语，知道其中的道理就好。</p>
+<h3 id="NIO-vs-IO"><a href="#NIO-vs-IO" class="headerlink" title="NIO vs IO"></a>NIO vs IO</h3><ul>
+<li>标准 IO 基于 流 (Stream) 进行操作；NIO 是基于 通道 (Channel) 进行操作的。</li>
+<li>Channel 是双向的，既可以写数据到通道，又可以从通道中读取数据，它能更好地反映出底层操作系统的真实情况（Linux 底层网络 IO 就是双向的）；而流的读写只能是单向的，要么是输入流，要么是输出流，不能既是输入流又是输出流。</li>
+<li>NIO能够实现阻塞/非阻塞的网络通信，而IO只能实现阻塞式的网络通信。</li>
+</ul>
+<h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><h4 id="NioServer"><a href="#NioServer" class="headerlink" title="NioServer"></a>NioServer</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NioServer</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> ByteBuffer buffer = ByteBuffer.allocate(<span class="number">8</span> * <span class="number">1024</span>);</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 创建 Selector (选择器/多路复用器)</span></span><br><span class="line">        Selector selector = Selector.open();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 创建 ServerSocketChannel</span></span><br><span class="line">        ServerSocketChannel serverChannel = ServerSocketChannel.open();</span><br><span class="line">        <span class="comment">// 绑定本机监听端口</span></span><br><span class="line">        serverChannel.socket().bind(<span class="keyword">new</span> InetSocketAddress(<span class="number">7788</span>));</span><br><span class="line">        <span class="comment">// 设置为非阻塞模式</span></span><br><span class="line">        serverChannel.configureBlocking(<span class="keyword">false</span>);</span><br><span class="line">        <span class="comment">// serverChannel 注册 OP_ACCEPT 事件到 selector</span></span><br><span class="line">        serverChannel.register(selector, SelectionKey.OP_ACCEPT);</span><br><span class="line">        System.out.printf(<span class="string">"[%s] Server startup!\n"</span>, Thread.currentThread().getName());</span><br><span class="line"></span><br><span class="line">        <span class="keyword">boolean</span> stopped = <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">while</span> (!stopped) &#123;</span><br><span class="line">            <span class="keyword">int</span> selectedNum = selector.select(<span class="number">1000</span>);</span><br><span class="line">            <span class="keyword">if</span> (selectedNum &lt; <span class="number">1</span>) &#123;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 遍历 selectedKeys</span></span><br><span class="line">            Set&lt;SelectionKey&gt; selected = selector.selectedKeys();</span><br><span class="line">            Iterator&lt;SelectionKey&gt; iter = selected.iterator();</span><br><span class="line">            <span class="keyword">while</span> (iter.hasNext()) &#123;</span><br><span class="line">                SelectionKey key = iter.next();</span><br><span class="line">                <span class="comment">// key 处理了，要从 selectedKeys 中移除</span></span><br><span class="line">                iter.remove();</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (key.isAcceptable()) &#123;</span><br><span class="line">                    ServerSocketChannel server = (ServerSocketChannel) key.channel();</span><br><span class="line">                    SocketChannel clientChannel = server.accept();</span><br><span class="line">                    <span class="comment">// 设置为非阻塞模式</span></span><br><span class="line">                    clientChannel.configureBlocking(<span class="keyword">false</span>);</span><br><span class="line">                    <span class="comment">// 注册 OP_READ 事件到 selector</span></span><br><span class="line">                    clientChannel.register(selector, SelectionKey.OP_READ);</span><br><span class="line">                    System.out.printf(<span class="string">"[%s] accept a new client socket connection: %s\n"</span>,</span><br><span class="line">                            Thread.currentThread().getName(), clientChannel.getRemoteAddress());</span><br><span class="line"></span><br><span class="line">                    ByteBuffer writeBuffer = ByteBuffer.wrap(<span class="string">"你好, I'm server!"</span>.getBytes(StandardCharsets.UTF_8));</span><br><span class="line">                    clientChannel.write(writeBuffer);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (key.isReadable()) &#123;</span><br><span class="line">                    SocketChannel clientChannel = (SocketChannel) key.channel();</span><br><span class="line">                    buffer.clear();</span><br><span class="line">                    <span class="keyword">int</span> bytesRead = clientChannel.read(buffer);</span><br><span class="line">                    <span class="keyword">if</span> (bytesRead &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                        String body = <span class="keyword">new</span> String(buffer.array(), <span class="number">0</span>, bytesRead, StandardCharsets.UTF_8);</span><br><span class="line">                        System.out.printf(<span class="string">"[%s] 收到来自 client (%s) 的数据: %s\n"</span>,</span><br><span class="line">                                Thread.currentThread().getName(), clientChannel.getRemoteAddress(), body);</span><br><span class="line">                        buffer.flip();</span><br><span class="line">                        clientChannel.write(buffer);</span><br><span class="line"></span><br><span class="line">                    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (bytesRead == <span class="number">0</span>) &#123;<span class="comment">// 读到 0 字节, ignore</span></span><br><span class="line"></span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;<span class="comment">// EOF</span></span><br><span class="line">                        System.out.printf(<span class="string">"[%s] client(%s) EOF! bytesRead=%s\n"</span>,</span><br><span class="line">                                Thread.currentThread().getName(), clientChannel.getRemoteAddress(), bytesRead);</span><br><span class="line">                        key.cancel();</span><br><span class="line">                        clientChannel.close();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        selector.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>client<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ nc 127.0.0.1 7788</span><br></pre></td></tr></table></figure></p>
+<h4 id="NioClient"><a href="#NioClient" class="headerlink" title="NioClient"></a>NioClient</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NioClient</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line"></span><br><span class="line">        Selector selector = Selector.open();</span><br><span class="line">        SocketChannel socketChannel = SocketChannel.open();</span><br><span class="line">        socketChannel.configureBlocking(<span class="keyword">false</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// If this channel is in non-blocking mode then an invocation of this method initiates a non-blocking connection operation.</span></span><br><span class="line">        <span class="comment">// If the connection is established immediately, as can happen with a local connection, then this method returns true.</span></span><br><span class="line">        <span class="comment">// Otherwise this method returns false and the connection operation must later be completed by invoking the #finishConnect method.</span></span><br><span class="line">        <span class="keyword">boolean</span> connected = socketChannel.connect(<span class="keyword">new</span> InetSocketAddress(<span class="string">"127.0.0.1"</span>, <span class="number">7788</span>));</span><br><span class="line">        System.out.printf(<span class="string">"[%s] connected to 127.0.0.1:7788? %s\n"</span>, Thread.currentThread().getName(), connected);</span><br><span class="line">        <span class="keyword">if</span> (connected) &#123;</span><br><span class="line">            socketChannel.register(selector, SelectionKey.OP_READ);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            socketChannel.register(selector, SelectionKey.OP_CONNECT);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">boolean</span> stopped = <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">while</span> (!stopped) &#123;</span><br><span class="line">            <span class="keyword">int</span> selectedNum = selector.select(<span class="number">1000</span>);</span><br><span class="line">            <span class="keyword">if</span> (selectedNum &lt; <span class="number">1</span>) &#123;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            Set&lt;SelectionKey&gt; selected = selector.selectedKeys();</span><br><span class="line">            Iterator&lt;SelectionKey&gt; iter = selected.iterator();</span><br><span class="line">            <span class="keyword">while</span> (iter.hasNext()) &#123;</span><br><span class="line">                SelectionKey key = iter.next();</span><br><span class="line">                iter.remove();</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (key.isConnectable()) &#123;</span><br><span class="line">                    SocketChannel sc = (SocketChannel) key.channel();</span><br><span class="line">                    <span class="keyword">boolean</span> finished = sc.finishConnect();</span><br><span class="line">                    <span class="keyword">if</span> (finished) &#123;</span><br><span class="line">                        System.out.printf(<span class="string">"[%s] %s -&gt; %s: 连接成功.\n"</span>,</span><br><span class="line">                                Thread.currentThread().getName(), sc.getLocalAddress(), sc.getRemoteAddress());</span><br><span class="line">                        sc.register(selector, SelectionKey.OP_READ);</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                        System.out.printf(<span class="string">"[%s] %s -&gt; %s: 连接失败!\n"</span>,</span><br><span class="line">                                Thread.currentThread().getName(), sc.getLocalAddress(), sc.getRemoteAddress());</span><br><span class="line">                        key.cancel();</span><br><span class="line">                        sc.close();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (key.isReadable()) &#123;</span><br><span class="line">                    SocketChannel clientChannel = (SocketChannel) key.channel();</span><br><span class="line">                    ByteBuffer buffer = ByteBuffer.allocate(<span class="number">8</span> * <span class="number">1024</span>);</span><br><span class="line">                    <span class="keyword">int</span> bytesRead = clientChannel.read(buffer);</span><br><span class="line">                    <span class="keyword">if</span> (bytesRead &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                        String body = <span class="keyword">new</span> String(buffer.array(), <span class="number">0</span>, bytesRead, StandardCharsets.UTF_8);</span><br><span class="line">                        System.out.printf(<span class="string">"[%s] 收到来自 server (%s) 的数据: %s\n"</span>,</span><br><span class="line">                                Thread.currentThread().getName(), clientChannel.getRemoteAddress(), body);</span><br><span class="line"></span><br><span class="line">                        String now = <span class="string">"你好, 现在时间: "</span> + <span class="keyword">new</span> Date();</span><br><span class="line">                        ByteBuffer writeBuffer = ByteBuffer.wrap(now.getBytes(StandardCharsets.UTF_8));</span><br><span class="line">                        clientChannel.write(writeBuffer);</span><br><span class="line"></span><br><span class="line">                    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (bytesRead == <span class="number">0</span>) &#123;<span class="comment">// 读到 0 字节, ignore</span></span><br><span class="line"></span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;<span class="comment">// EOF</span></span><br><span class="line">                        System.out.printf(<span class="string">"[%s] server(%s) EOF! bytesRead=%s\n"</span>,</span><br><span class="line">                                Thread.currentThread().getName(), clientChannel.getRemoteAddress(), bytesRead);</span><br><span class="line">                        key.cancel();</span><br><span class="line">                        clientChannel.close();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        selector.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="NIO-API"><a href="#NIO-API" class="headerlink" title="NIO API"></a>NIO API</h2><h3 id="Buffer"><a href="#Buffer" class="headerlink" title="Buffer"></a>Buffer</h3><p>一个 Buffer 本质上是内存中的一块，我们可以将数据写入这块内存，之后从这块内存获取数据。<br>NIO 通道 只能与 Buffer 进行交互。数据总是从通道读取到缓冲区，或者从缓冲区写入到通道中。</p>
+<p>属性：<br>capacity：容量，永远不会变化<br>limit：不应该被读或写的第一个元素的索引<br>position：下一个将要被读或写的元素的索引</p>
+<p><img src="/2018/11/10/nio-intro/Buffer-hierarchy.png" alt="Buffer-hierarchy.png"></p>
+<h4 id="java-nio-Buffer"><a href="#java-nio-Buffer" class="headerlink" title="java.nio.Buffer"></a>java.nio.Buffer</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Buffer</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Invariants: mark &lt;= position &lt;= limit &lt;= capacity</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> mark = -<span class="number">1</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> position = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> limit;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> capacity;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">capacity</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> capacity;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">position</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> position;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> Buffer <span class="title">position</span><span class="params">(<span class="keyword">int</span> newPosition)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> ((newPosition &gt; limit) || (newPosition &lt; <span class="number">0</span>))</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException();</span><br><span class="line">        position = newPosition;</span><br><span class="line">        <span class="keyword">if</span> (mark &gt; position) mark = -<span class="number">1</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">limit</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> limit;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> Buffer <span class="title">limit</span><span class="params">(<span class="keyword">int</span> newLimit)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> ((newLimit &gt; capacity) || (newLimit &lt; <span class="number">0</span>))</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException();</span><br><span class="line">        limit = newLimit;</span><br><span class="line">        <span class="keyword">if</span> (position &gt; limit) position = limit;</span><br><span class="line">        <span class="keyword">if</span> (mark &gt; limit) mark = -<span class="number">1</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> Buffer <span class="title">mark</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        mark = position;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> Buffer <span class="title">flip</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        limit = position;</span><br><span class="line">        position = <span class="number">0</span>;</span><br><span class="line">        mark = -<span class="number">1</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> Buffer <span class="title">reset</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> m = mark;</span><br><span class="line">        <span class="keyword">if</span> (m &lt; <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> InvalidMarkException();</span><br><span class="line">        position = m;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> Buffer <span class="title">clear</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        position = <span class="number">0</span>;</span><br><span class="line">        limit = capacity;</span><br><span class="line">        mark = -<span class="number">1</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> Buffer <span class="title">rewind</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        position = <span class="number">0</span>;</span><br><span class="line">        mark = -<span class="number">1</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">remaining</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> limit - position;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">boolean</span> <span class="title">hasRemaining</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> position &lt; limit;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="java-nio-ByteBuffer"><a href="#java-nio-ByteBuffer" class="headerlink" title="java.nio.ByteBuffer"></a>java.nio.ByteBuffer</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">ByteBuffer</span> <span class="keyword">extends</span> <span class="title">Buffer</span></span></span><br><span class="line"><span class="class">    <span class="keyword">implements</span> <span class="title">Comparable</span>&lt;<span class="title">ByteBuffer</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// These fields are declared here rather than in Heap-X-Buffer in order to</span></span><br><span class="line">    <span class="comment">// reduce the number of virtual method invocations needed to access these</span></span><br><span class="line">    <span class="comment">// values, which is especially costly when coding small buffers.</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">byte</span>[] hb;                  <span class="comment">// Non-null only for heap buffers</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> offset;</span><br><span class="line">    <span class="keyword">boolean</span> isReadOnly;               <span class="comment">// Valid only for heap buffers</span></span><br><span class="line"></span><br><span class="line">    ByteBuffer(<span class="keyword">int</span> mark, <span class="keyword">int</span> pos, <span class="keyword">int</span> lim, <span class="keyword">int</span> cap,   <span class="comment">// package-private</span></span><br><span class="line">                 <span class="keyword">byte</span>[] hb, <span class="keyword">int</span> offset) &#123;</span><br><span class="line">        <span class="keyword">super</span>(mark, pos, lim, cap);</span><br><span class="line">        <span class="keyword">this</span>.hb = hb;</span><br><span class="line">        <span class="keyword">this</span>.offset = offset;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ByteBuffer(<span class="keyword">int</span> mark, <span class="keyword">int</span> pos, <span class="keyword">int</span> lim, <span class="keyword">int</span> cap) &#123; <span class="comment">// package-private</span></span><br><span class="line">        <span class="keyword">this</span>(mark, pos, lim, cap, <span class="keyword">null</span>, <span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ByteBuffer <span class="title">allocate</span><span class="params">(<span class="keyword">int</span> capacity)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (capacity &lt; <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException();</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> HeapByteBuffer(capacity, capacity);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ByteBuffer <span class="title">allocateDirect</span><span class="params">(<span class="keyword">int</span> capacity)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> DirectByteBuffer(capacity);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ByteBuffer <span class="title">wrap</span><span class="params">(<span class="keyword">byte</span>[] array, <span class="keyword">int</span> offset, <span class="keyword">int</span> length)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> HeapByteBuffer(array, offset, length);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IllegalArgumentException x) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IndexOutOfBoundsException();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ByteBuffer <span class="title">wrap</span><span class="params">(<span class="keyword">byte</span>[] array)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> wrap(array, <span class="number">0</span>, array.length);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> ByteBuffer <span class="title">slice</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> ByteBuffer <span class="title">duplicate</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> ByteBuffer <span class="title">compact</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">boolean</span> <span class="title">isDirect</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> ByteBuffer <span class="title">asReadOnlyBuffer</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">// -- Singleton get/put methods --</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">byte</span> <span class="title">get</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> ByteBuffer <span class="title">put</span><span class="params">(<span class="keyword">byte</span> b)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">byte</span> <span class="title">get</span><span class="params">(<span class="keyword">int</span> index)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> ByteBuffer <span class="title">put</span><span class="params">(<span class="keyword">int</span> index, <span class="keyword">byte</span> b)</span></span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">// -- Bulk get operations --</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ByteBuffer <span class="title">get</span><span class="params">(<span class="keyword">byte</span>[] dst, <span class="keyword">int</span> offset, <span class="keyword">int</span> length)</span> </span>&#123;</span><br><span class="line">        checkBounds(offset, length, dst.length);</span><br><span class="line">        <span class="keyword">if</span> (length &gt; remaining())</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> BufferUnderflowException();</span><br><span class="line">        <span class="keyword">int</span> end = offset + length;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = offset; i &lt; end; i++)</span><br><span class="line">            dst[i] = get();</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ByteBuffer <span class="title">get</span><span class="params">(<span class="keyword">byte</span>[] dst)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> get(dst, <span class="number">0</span>, dst.length);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">// -- Bulk put operations --</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ByteBuffer <span class="title">put</span><span class="params">(ByteBuffer src)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (src == <span class="keyword">this</span>)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException();</span><br><span class="line">        <span class="keyword">int</span> n = src.remaining();</span><br><span class="line">        <span class="keyword">if</span> (n &gt; remaining())</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> BufferOverflowException();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++)</span><br><span class="line">            put(src.get());</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ByteBuffer <span class="title">put</span><span class="params">(<span class="keyword">byte</span>[] src, <span class="keyword">int</span> offset, <span class="keyword">int</span> length)</span> </span>&#123;</span><br><span class="line">        checkBounds(offset, length, src.length);</span><br><span class="line">        <span class="keyword">if</span> (length &gt; remaining())</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> BufferOverflowException();</span><br><span class="line">        <span class="keyword">int</span> end = offset + length;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = offset; i &lt; end; i++)</span><br><span class="line">            <span class="keyword">this</span>.put(src[i]);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> ByteBuffer <span class="title">put</span><span class="params">(<span class="keyword">byte</span>[] src)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> put(src, <span class="number">0</span>, src.length);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">// -- Other stuff --</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">boolean</span> <span class="title">hasArray</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> (hb != <span class="keyword">null</span>) &amp;&amp; !isReadOnly;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">byte</span>[] array() &#123;</span><br><span class="line">        <span class="keyword">if</span> (hb == <span class="keyword">null</span>)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> UnsupportedOperationException();</span><br><span class="line">        <span class="keyword">if</span> (isReadOnly)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> ReadOnlyBufferException();</span><br><span class="line">        <span class="keyword">return</span> hb;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">arrayOffset</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (hb == <span class="keyword">null</span>)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> UnsupportedOperationException();</span><br><span class="line">        <span class="keyword">if</span> (isReadOnly)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> ReadOnlyBufferException();</span><br><span class="line">        <span class="keyword">return</span> offset;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// -- Other byte stuff: Access to binary data --</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">boolean</span> bigEndian                                   <span class="comment">// package-private</span></span><br><span class="line">        = <span class="keyword">true</span>;</span><br><span class="line">    <span class="keyword">boolean</span> nativeByteOrder                             <span class="comment">// package-private</span></span><br><span class="line">        = (Bits.byteOrder() == ByteOrder.BIG_ENDIAN);</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> ByteOrder <span class="title">order</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> bigEndian ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> ByteBuffer <span class="title">order</span><span class="params">(ByteOrder bo)</span> </span>&#123;</span><br><span class="line">        bigEndian = (bo == ByteOrder.BIG_ENDIAN);</span><br><span class="line">        nativeByteOrder =</span><br><span class="line">            (bigEndian == (Bits.byteOrder() == ByteOrder.BIG_ENDIAN));</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">int</span> <span class="title">getInt</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> ByteBuffer <span class="title">putInt</span><span class="params">(<span class="keyword">int</span> value)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">int</span> <span class="title">getInt</span><span class="params">(<span class="keyword">int</span> index)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> ByteBuffer <span class="title">putInt</span><span class="params">(<span class="keyword">int</span> index, <span class="keyword">int</span> value)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">char</span> <span class="title">getChar</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> ByteBuffer <span class="title">putChar</span><span class="params">(<span class="keyword">char</span> value)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">char</span> <span class="title">getChar</span><span class="params">(<span class="keyword">int</span> index)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> ByteBuffer <span class="title">putChar</span><span class="params">(<span class="keyword">int</span> index, <span class="keyword">char</span> value)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">short</span> <span class="title">getShort</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> ByteBuffer <span class="title">putShort</span><span class="params">(<span class="keyword">short</span> value)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">short</span> <span class="title">getShort</span><span class="params">(<span class="keyword">int</span> index)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> ByteBuffer <span class="title">putShort</span><span class="params">(<span class="keyword">int</span> index, <span class="keyword">short</span> value)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">long</span> <span class="title">getLong</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> ByteBuffer <span class="title">putLong</span><span class="params">(<span class="keyword">long</span> value)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">long</span> <span class="title">getLong</span><span class="params">(<span class="keyword">int</span> index)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> ByteBuffer <span class="title">putLong</span><span class="params">(<span class="keyword">int</span> index, <span class="keyword">long</span> value)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">float</span> <span class="title">getFloat</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> ByteBuffer <span class="title">putFloat</span><span class="params">(<span class="keyword">float</span> value)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">float</span> <span class="title">getFloat</span><span class="params">(<span class="keyword">int</span> index)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> ByteBuffer <span class="title">putFloat</span><span class="params">(<span class="keyword">int</span> index, <span class="keyword">float</span> value)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">double</span> <span class="title">getDouble</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> ByteBuffer <span class="title">putDouble</span><span class="params">(<span class="keyword">double</span> value)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">double</span> <span class="title">getDouble</span><span class="params">(<span class="keyword">int</span> index)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> ByteBuffer <span class="title">putDouble</span><span class="params">(<span class="keyword">int</span> index, <span class="keyword">double</span> value)</span></span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Selector"><a href="#Selector" class="headerlink" title="Selector"></a>Selector</h3><h3 id="SelectionKey"><a href="#SelectionKey" class="headerlink" title="SelectionKey"></a>SelectionKey</h3><h3 id="SocketChannel"><a href="#SocketChannel" class="headerlink" title="SocketChannel"></a>SocketChannel</h3><h3 id="ServerSocketChannel"><a href="#ServerSocketChannel" class="headerlink" title="ServerSocketChannel"></a>ServerSocketChannel</h3><h2 id="Reactor"><a href="#Reactor" class="headerlink" title="Reactor"></a>Reactor</h2><p>Event-driven processing pattern: Reactor, Proactor<br><a href="http://gee.cs.oswego.edu/dl/cpjslides/nio.pdf" target="_blank" rel="noopener">Scalable IO in Java</a></p>
+<p>Reactor</p>
+<ul>
+<li>Reactor responds to IO events by dispatching the appropriate handler</li>
+<li>Handlers perform non-blocking actions</li>
+<li>Manage by binding handlers to events</li>
+</ul>
+<p>在中，Reactor等待某个事件或者可应用或个操作的状态发生（比如文件描述符可读写，或者是socket可读写），然后把这个事件传给事先注册的Handler（事件处理函数或者回调函数），由后者来做实际的读写操作，其中的读写操作都需要应用程序同步操作，所以Reactor是非阻塞同步网络模型。</p>
+<p>如果把I/O操作改为异步，即交给操作系统来完成能进一步提升性能，这就是异步网络模型Proactor。</p>
+<h3 id="single-threaded-version"><a href="#single-threaded-version" class="headerlink" title="single threaded version"></a>single threaded version</h3><p><img src="/2018/11/10/nio-intro/single-threaded-version.png" alt="single threaded version"></p>
+<ul>
+<li>Basic Reactor Design<ul>
+<li>single threaded version</li>
+</ul>
+</li>
+</ul>
+<p>示例即是这一种，单线程管天下</p>
+<p>后面两种 Multithreaded Designs<br>Strategically add threads for scalability<br>Mainly applicable to multiprocessors</p>
+<h3 id="worker-thread-pools"><a href="#worker-thread-pools" class="headerlink" title="worker thread pools"></a>worker thread pools</h3><p><img src="/2018/11/10/nio-intro/worker-thread-pools.png" alt="worker thread pools"></p>
+<ul>
+<li>Worker Threads<ul>
+<li>Offload non-IO processing to speed up Reactor thread<ul>
+<li>Similar to POSA2 Proactor designs</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="multiple-reactor-threads"><a href="#multiple-reactor-threads" class="headerlink" title="multiple reactor threads"></a>multiple reactor threads</h3><p><img src="/2018/11/10/nio-intro/multiple-reactor-threads.png" alt="multiple reactor threads"></p>
+<ul>
+<li>Using Reactor Pools<ul>
+<li>Load-balance to match CPU and IO rates</li>
+<li>Static or dynamic construction<ul>
+<li>Each with own Selector, Thread, dispatch loop</li>
+</ul>
+</li>
+<li>Main acceptor distributes load to other reactors</li>
+</ul>
+</li>
+</ul>
+<h2 id="Java-原生-NIO-编程的缺点"><a href="#Java-原生-NIO-编程的缺点" class="headerlink" title="Java 原生 NIO 编程的缺点"></a>Java 原生 NIO 编程的缺点</h2><ol>
+<li>NIO的类库和API繁杂，使用麻烦，你需要熟练掌握Selector、ServerSocketChannel、SocketChannel、ByteBuffer等。</li>
+<li>需要具备其他的额外技能做铺垫，例如熟悉Java多线程编程。这是因为NIO编程涉及到Reactor模式，你必须对多线程和网路编程非常熟悉，才能编写出高质量的NIO程序。</li>
+<li>可靠性能力补齐，工作量和难度都非常大。例如客户端面临断连重连、网络闪断、粘包拆包、失败缓存、网络拥塞和异常码流的处理等问题，NIO编程的特点是功能开发相对容易，但是可靠性能力补齐的工作量和难度都非常大。</li>
+<li>JDK NIO的BUG，例如臭名昭著的epoll bug，它会导致Selector空轮询，最终导致CPU 100%。官方声称在JDK1.6版本的update18修复了该问题，但是直到JDK1.7版本该问题仍旧存在，只不过该BUG发生概率降低了一些而已，它并没有被根本解决。该BUG以及与该BUG相关的问题单可以参见以下链接内容。<br><a href="http://bugs.java.com/bugdatabase/view_bug.do?bug_id=6403933" target="_blank" rel="noopener">http://bugs.java.com/bugdatabase/view_bug.do?bug_id=6403933</a><br><a href="http://bugs.java.com/bugdatabase/view_bug.do?bug_id=2147719" target="_blank" rel="noopener">http://bugs.java.com/bugdatabase/view_bug.do?bug_id=2147719</a></li>
+</ol>
+<p>示例中，只是 NIO 编程的演示代码，缺少太多功能：</p>
+<ul>
+<li>没有实现 multiple reactor pattern</li>
+<li>无论是 client 还是 server 都不能主动发送消息</li>
+<li>没有编码、解码</li>
+<li>没有考虑粘包、拆包</li>
+<li>没有长连接心跳机制</li>
+</ul>
+<p>大家可以试着完成这些功能，将有助于理解 netty 原理，因为有名的 netty 实际是基于 Java 原生 NIO 做了良好的封装，让 NIO 使用更方便、更省心、更健壮、功能更丰富、性能更好。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><blockquote>
+<p>本文参考了互联网上大家的分享，就不一一列举，在此一并谢过。<br>也希望本文，能对大家有所帮助，若有错误，还请谅解、指正。</p>
+</blockquote>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/nio/" rel="tag"># nio</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/09/27/big-endian-and-little-endian/" rel="next" title="大端小端">
+                <i class="fa fa-chevron-left"></i> 大端小端
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpeg"
+                alt="moonrunwater" />
+            
+              <p class="site-author-name" itemprop="name">moonrunwater</p>
+              <p class="site-description motion-element" itemprop="description">学而不思则罔，思而不学则殆</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">8</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">4</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">5</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Unix-Linux-IO"><span class="nav-number">1.</span> <span class="nav-text">Unix/Linux IO</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#服务端处理网络请求"><span class="nav-number">1.1.</span> <span class="nav-text">服务端处理网络请求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IO模型"><span class="nav-number">1.2.</span> <span class="nav-text">IO模型</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-阻塞式I-O模型-blocking-I-O）"><span class="nav-number">1.2.1.</span> <span class="nav-text">1. 阻塞式I/O模型(blocking I/O）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-非阻塞式I-O模型-non-blocking-I-O）"><span class="nav-number">1.2.2.</span> <span class="nav-text">2. 非阻塞式I/O模型(non-blocking I/O）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-I-O复用模型-I-O-multiplexing）"><span class="nav-number">1.2.3.</span> <span class="nav-text">3. I/O复用模型(I/O multiplexing）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-信号驱动式I-O模型（signal-driven-I-O-ˈdrɪvn"><span class="nav-number">1.2.4.</span> <span class="nav-text">4. 信号驱动式I/O模型（signal-driven I/O) [ˈdrɪvn]</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-异步I-O模型（asynchronous-I-O）"><span class="nav-number">1.2.5.</span> <span class="nav-text">5. 异步I/O模型（asynchronous I/O）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5种I-O模型总结"><span class="nav-number">1.2.6.</span> <span class="nav-text">5种I/O模型总结</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NIO"><span class="nav-number">2.</span> <span class="nav-text">NIO</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#NIO-vs-IO"><span class="nav-number">2.1.</span> <span class="nav-text">NIO vs IO</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#示例"><span class="nav-number">2.2.</span> <span class="nav-text">示例</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#NioServer"><span class="nav-number">2.2.1.</span> <span class="nav-text">NioServer</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#NioClient"><span class="nav-number">2.2.2.</span> <span class="nav-text">NioClient</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NIO-API"><span class="nav-number">3.</span> <span class="nav-text">NIO API</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Buffer"><span class="nav-number">3.1.</span> <span class="nav-text">Buffer</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#java-nio-Buffer"><span class="nav-number">3.1.1.</span> <span class="nav-text">java.nio.Buffer</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#java-nio-ByteBuffer"><span class="nav-number">3.1.2.</span> <span class="nav-text">java.nio.ByteBuffer</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Selector"><span class="nav-number">3.2.</span> <span class="nav-text">Selector</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SelectionKey"><span class="nav-number">3.3.</span> <span class="nav-text">SelectionKey</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SocketChannel"><span class="nav-number">3.4.</span> <span class="nav-text">SocketChannel</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ServerSocketChannel"><span class="nav-number">3.5.</span> <span class="nav-text">ServerSocketChannel</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Reactor"><span class="nav-number">4.</span> <span class="nav-text">Reactor</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#single-threaded-version"><span class="nav-number">4.1.</span> <span class="nav-text">single threaded version</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#worker-thread-pools"><span class="nav-number">4.2.</span> <span class="nav-text">worker thread pools</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#multiple-reactor-threads"><span class="nav-number">4.3.</span> <span class="nav-text">multiple reactor threads</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Java-原生-NIO-编程的缺点"><span class="nav-number">5.</span> <span class="nav-text">Java 原生 NIO 编程的缺点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-number">6.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">moonrunwater</span>
+
+  
+
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Muse</a></div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "uCxAlVjLtxxWS7hWJYI28kPN-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "uCxAlVjLtxxWS7hWJYI28kPN-gzGzoHsz",
+                'X-LC-Key': "YxJ09zFe3juR2BIxGN0hKKpw",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
