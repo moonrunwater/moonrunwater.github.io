@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.1" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.1" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.4.1',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="摘要:Netty 中的所有 IO 操作都是异步的，也就是说任何 IO 调用都将立即返回，返回的 ChannelFuture 实例会在操作完成时，通知用户该操作的状态、结果。">
+<meta name="keywords" content="netty,asynchronous,future,promise">
+<meta property="og:type" content="article">
+<meta property="og:title" content="netty-future-promise">
+<meta property="og:url" content="https://moonrunwater.github.io/2019/04/01/netty-future-promise/index.html">
+<meta property="og:site_name" content="moonrunwater">
+<meta property="og:description" content="摘要:Netty 中的所有 IO 操作都是异步的，也就是说任何 IO 调用都将立即返回，返回的 ChannelFuture 实例会在操作完成时，通知用户该操作的状态、结果。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://moonrunwater.github.io/2019/04/01/netty-future-promise/future-hierarchy.png">
+<meta property="og:updated_time" content="2019-04-04T08:36:33.341Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="netty-future-promise">
+<meta name="twitter:description" content="摘要:Netty 中的所有 IO 操作都是异步的，也就是说任何 IO 调用都将立即返回，返回的 ChannelFuture 实例会在操作完成时，通知用户该操作的状态、结果。">
+<meta name="twitter:image" content="https://moonrunwater.github.io/2019/04/01/netty-future-promise/future-hierarchy.png">
+
+
+
+
+
+
+  <link rel="canonical" href="https://moonrunwater.github.io/2019/04/01/netty-future-promise/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>netty-future-promise | moonrunwater</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <a href="https://github.com/moonrunwater" class="github-corner" aria-label="View source on Github"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">moonrunwater</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">路漫漫其修远兮，吾将上下而求索</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+    <a href="/about/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-user"></i> <br />关于</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://moonrunwater.github.io/2019/04/01/netty-future-promise/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="moonrunwater">
+      <meta itemprop="description" content="学而不思则罔，思而不学则殆">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="moonrunwater">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">netty-future-promise
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-04-01 08:53:42" itemprop="dateCreated datePublished" datetime="2019-04-01T08:53:42+08:00">2019-04-01</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-04 16:36:33" itemprop="dateModified" datetime="2019-04-04T16:36:33+08:00">2019-04-04</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/netty/" itemprop="url" rel="index"><span itemprop="name">netty</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2019/04/01/netty-future-promise/" class="leancloud_visitors" data-flag-title="netty-future-promise">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>摘要:<br>Netty 中的所有 IO 操作都是异步的，也就是说任何 IO 调用都将立即返回，返回的 ChannelFuture 实例会在操作完成时，通知用户该操作的状态、结果。<br><a id="more"></a></p>
+<h2 id="Netty-是异步的"><a href="#Netty-是异步的" class="headerlink" title="Netty 是异步的"></a>Netty 是异步的</h2><blockquote>
+<p>Netty is an asynchronous event-driven network application framework for rapid development of maintainable high performance protocol servers &amp; clients.</p>
+</blockquote>
+<p>官网介绍，Netty 是异步的。</p>
+<ul>
+<li>一方面，Netty 使用异步 IO 模型，或者更精确地说是同步非阻塞 IO（IO 读写等待就绪后，才会执行读写，不会阻塞线程，已经在 <a href="https://moonrunwater.github.io/2018/11/10/nio-intro/">NIO</a> 里详细说了）；</li>
+<li>另一方面，Netty 中的所有 IO 操作都是异步的，也就是说任何 IO 调用都将立即返回，返回的 ChannelFuture 实例会在操作完成时，通知用户该操作的状态、结果。</li>
+</ul>
+<h2 id="Netty-Future-体系"><a href="#Netty-Future-体系" class="headerlink" title="Netty Future 体系"></a>Netty Future 体系</h2><p>Netty 异步 IO 操作，使用 Future、Promise 实现。<br><img src="/2019/04/01/netty-future-promise/future-hierarchy.png" alt="future-hierarchy"></p>
+<p>Netty 模块化做的特别好，Future、Promise 功能，统一封装在 netty-common 模块里（io.netty.util.concurrent 包），可以独立作为<a href="https://github.com/netty/netty/wiki/Using-as-a-generic-library" target="_blank" rel="noopener">通用库</a>使用。</p>
+<h3 id="JDK-Future"><a href="#JDK-Future" class="headerlink" title="JDK Future"></a>JDK Future</h3><h4 id="java-util-concurrent-Future"><a href="#java-util-concurrent-Future" class="headerlink" title="java.util.concurrent.Future"></a>java.util.concurrent.Future</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * A &#123;<span class="doctag">@code</span> Future&#125; represents the result of an asynchronous computation.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Future</span>&lt;<span class="title">V</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">cancel</span><span class="params">(<span class="keyword">boolean</span> mayInterruptIfRunning)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">isCancelled</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Completion may be due to normal termination, an exception, or</span></span><br><span class="line"><span class="comment">     * cancellation -- in all of these cases, this method will return &#123;<span class="doctag">@code</span> true&#125;.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">isDone</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">V <span class="title">get</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException, ExecutionException</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">V <span class="title">get</span><span class="params">(<span class="keyword">long</span> timeout, TimeUnit unit)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> InterruptedException, ExecutionException, TimeoutException</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="JDK-Future-示例"><a href="#JDK-Future-示例" class="headerlink" title="JDK Future 示例"></a>JDK Future 示例</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FutureDemo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testFuture</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        ExecutorService threadPool = Executors.newFixedThreadPool(<span class="number">2</span>);</span><br><span class="line">        Future&lt;Integer&gt; future = threadPool.submit(</span><br><span class="line">                () -&gt; &#123;</span><br><span class="line">                    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">                        Thread.sleep(<span class="number">1</span> * <span class="number">1000L</span>);</span><br><span class="line">                        System.out.printf(<span class="string">"%s === sleep %d\n"</span>, Thread.currentThread().getName(), i);</span><br><span class="line">                        <span class="keyword">if</span> (i == <span class="number">5</span>) &#123;</span><br><span class="line">                            <span class="comment">// throw new RuntimeException("error occured!");</span></span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">new</span> Random().nextInt(<span class="number">100</span>);</span><br><span class="line">                &#125;);</span><br><span class="line"></span><br><span class="line">        System.out.printf(<span class="string">"%s === isDone: %s\n"</span>, Thread.currentThread().getName(), future.isDone());</span><br><span class="line">        <span class="comment">// java.util.concurrent.FutureTask</span></span><br><span class="line">        <span class="comment">// System.out.println(future.getClass().getCanonicalName());</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">long</span> start =  System.currentTimeMillis();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// Integer result = future.get();</span></span><br><span class="line">            Integer result = future.get(<span class="number">20</span>, TimeUnit.SECONDS);</span><br><span class="line">            System.out.println(result);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            System.out.printf(<span class="string">"InterruptedException (%s) \n"</span>, e.getMessage());</span><br><span class="line">        &#125; <span class="keyword">catch</span> (ExecutionException e) &#123;</span><br><span class="line">            System.out.printf(<span class="string">"ExecutionException (%s) \n"</span>, e.getMessage());</span><br><span class="line">        &#125; <span class="keyword">catch</span> (TimeoutException e) &#123;</span><br><span class="line">            <span class="comment">// mayInterruptIfRunning: true, false</span></span><br><span class="line">            <span class="keyword">boolean</span> cancel = future.cancel(<span class="keyword">false</span>);</span><br><span class="line">            System.out.printf(<span class="string">"cancel() -&gt; %s\n"</span>, cancel);</span><br><span class="line">            System.out.printf(<span class="string">"isCancelled: %s\n"</span>, future.isCancelled());</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.printf(<span class="string">"%s === cost: %s\n"</span>, Thread.currentThread().getName(), System.currentTimeMillis() - start);</span><br><span class="line"></span><br><span class="line">        threadPool.shutdown();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        testFuture();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="JDK-Future-缺点"><a href="#JDK-Future-缺点" class="headerlink" title="JDK Future 缺点"></a>JDK Future 缺点</h4><p>仔细思考 JDK Future，会发现两个问题：</p>
+<ol>
+<li><p>只有一个 isDone() 方法，判断异步操作是否完成，但是对于完成的定义过于模糊</p>
+<ul>
+<li>正常终止、抛出异常、用户取消，都会使 isDone() 返回 true</li>
+<li>实际使用中，常常需要对这三种情况分别处理</li>
+</ul>
+</li>
+<li><p>需要你主动获取操作状态、结果，检查操作是否已经完成，或者一直阻塞直到它完成</p>
+<ul>
+<li>对于一个异步操作，我们更关心的是这个异步操作结束后能否再执行一系列动作</li>
+</ul>
+</li>
+</ol>
+<p>正是因为 JDK Future 存在上面两个问题，Netty 扩展了自己的 Future。</p>
+<h3 id="Future"><a href="#Future" class="headerlink" title="Future"></a>Future</h3><h4 id="io-netty-util-concurrent-Future"><a href="#io-netty-util-concurrent-Future" class="headerlink" title="io.netty.util.concurrent.Future"></a>io.netty.util.concurrent.Future</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The result of an asynchronous operation.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Future</span>&lt;<span class="title">V</span>&gt; <span class="keyword">extends</span> <span class="title">java</span>.<span class="title">util</span>.<span class="title">concurrent</span>.<span class="title">Future</span>&lt;<span class="title">V</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Returns &#123;<span class="doctag">@code</span> true&#125; if and only if the I/O operation was completed successfully.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">isSuccess</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Returns the cause of the failed I/O operation if the I/O operation has failed.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">Throwable <span class="title">cause</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">isCancellable</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Adds the specified listener to this future. The specified listener is notified when this future is done.  </span></span><br><span class="line"><span class="comment">     * If this future is already completed, the specified listener is notified immediately.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">Future&lt;V&gt; <span class="title">addListener</span><span class="params">(GenericFutureListener&lt;? extends Future&lt;? <span class="keyword">super</span> V&gt;&gt; listener)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">Future&lt;V&gt; <span class="title">removeListener</span><span class="params">(GenericFutureListener&lt;? extends Future&lt;? <span class="keyword">super</span> V&gt;&gt; listener)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Waits for this future until it is done,</span></span><br><span class="line"><span class="comment">     * and rethrows the cause of the failure if this future failed.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">Future&lt;V&gt; <span class="title">sync</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Waits for this future to be completed.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">Future&lt;V&gt; <span class="title">await</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Return the result without blocking. If the future is not done yet this will return &#123;<span class="doctag">@code</span> null&#125;.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">V <span class="title">getNow</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Netty Future 解决了 JDK Future 的两个问题:</p>
+<ol>
+<li>Future 有两种状态 Uncompleted、Completed，其中 Completed 又有三种状态</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">                                     +---------------------------+</span><br><span class="line">                                     | Completed successfully    |</span><br><span class="line">                                     +---------------------------+</span><br><span class="line">                                +----&gt;      isDone() = <span class="keyword">true</span>      |</span><br><span class="line">+--------------------------+    |    |   isSuccess() = <span class="keyword">true</span>      |</span><br><span class="line">|        Uncompleted       |    |    +===========================+</span><br><span class="line">+--------------------------+    |    | Completed with failure    |</span><br><span class="line">|      isDone() = <span class="keyword">false</span>    |    |    +---------------------------+</span><br><span class="line">|   isSuccess() = <span class="keyword">false</span>    |----+----&gt;      isDone() = <span class="keyword">true</span>      |</span><br><span class="line">| isCancelled() = <span class="keyword">false</span>    |    |    |       cause() = non-<span class="keyword">null</span>  |</span><br><span class="line">|       cause() = <span class="keyword">null</span>     |    |    +===========================+</span><br><span class="line">+--------------------------+    |    | Completed by cancellation |</span><br><span class="line">                                |    +---------------------------+</span><br><span class="line">                                +----&gt;      isDone() = <span class="keyword">true</span>      |</span><br><span class="line">                                     | isCancelled() = <span class="keyword">true</span>      |</span><br><span class="line">                                     +---------------------------+</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li><p>addListener(listener)，可以添加操作完成后的回调操作</p>
+</li>
+<li><p>await()、sync()，可以以阻塞的方式等待异步操作完成</p>
+</li>
+</ol>
+<p>Future 是只读的 read-only，操作的状态、结果是不可变的，只能读取，不能修改，因此 Netty 还提供了可写的 Future，也即 Promise。</p>
+<h4 id="Future-示例"><a href="#Future-示例" class="headerlink" title="Future 示例"></a>Future 示例</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FutureDemo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        EventExecutorGroup threadPool = <span class="keyword">new</span> DefaultEventExecutorGroup(<span class="number">4</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">            Future&lt;Integer&gt; future = threadPool.submit(</span><br><span class="line">                    <span class="keyword">new</span> Callable&lt;Integer&gt;() &#123;</span><br><span class="line">                        <span class="meta">@Override</span></span><br><span class="line">                        <span class="function"><span class="keyword">public</span> Integer <span class="title">call</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">                            <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; <span class="number">4</span>; j++) &#123;</span><br><span class="line">                                Thread.sleep(<span class="number">1</span> * <span class="number">1000L</span>);</span><br><span class="line">                                System.out.printf(<span class="string">"%s === sleep 1s\n"</span>, Thread.currentThread().getName());</span><br><span class="line">                                <span class="keyword">if</span> (j == <span class="number">2</span>) &#123;</span><br><span class="line">                                    <span class="comment">// throw new RuntimeException("error occured!");</span></span><br><span class="line">                                &#125;</span><br><span class="line">                            &#125;</span><br><span class="line">                            <span class="keyword">return</span> <span class="keyword">new</span> Random().nextInt(<span class="number">100</span>);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">            );</span><br><span class="line"></span><br><span class="line">            <span class="comment">// io.netty.util.concurrent.PromiseTask</span></span><br><span class="line">            <span class="comment">// System.out.println(future.getClass().getCanonicalName());</span></span><br><span class="line"></span><br><span class="line">            future.addListener(</span><br><span class="line">                    <span class="keyword">new</span> FutureListener&lt;Integer&gt;() &#123;</span><br><span class="line">                        <span class="meta">@Override</span></span><br><span class="line">                        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">operationComplete</span><span class="params">(Future&lt;Integer&gt; future)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">                            <span class="keyword">if</span> (future.isSuccess()) &#123;</span><br><span class="line">                                Integer result = future.get();</span><br><span class="line">                                System.out.printf(<span class="string">"%s === 任务成功, result=%s\n"</span>, Thread.currentThread().getName(), result);</span><br><span class="line">                                <span class="comment">// do something when task success</span></span><br><span class="line">                                <span class="keyword">if</span> (result &gt; <span class="number">50</span>) &#123;</span><br><span class="line">                                    System.out.printf(<span class="string">"%s === GOOD, result &gt; 50\n"</span>, Thread.currentThread().getName());</span><br><span class="line">                                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                                    System.out.printf(<span class="string">"%s === SAD\n"</span>, Thread.currentThread().getName());</span><br><span class="line">                                &#125;</span><br><span class="line">                            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (future.cause() != <span class="keyword">null</span>) &#123;</span><br><span class="line">                                System.out.printf(<span class="string">"%s === 任务失败, cause is %s\n"</span>, Thread.currentThread().getName(), future.cause().getMessage());</span><br><span class="line">                            &#125; <span class="keyword">else</span> &#123;<span class="comment">// isCancelled()</span></span><br><span class="line">                                System.out.printf(<span class="string">"%s === 任务被取消, isCancelled=%s\n"</span>, Thread.currentThread().getName(), future.isCancelled());</span><br><span class="line">                            &#125;</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">            );</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        System.out.printf(<span class="string">"%s === group.shutdownGracefully begin ...\n"</span>, Thread.currentThread().getName());</span><br><span class="line">        Future&lt;?&gt; future = threadPool.shutdownGracefully();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            future.sync();</span><br><span class="line">            System.out.printf(<span class="string">"%s === group.shutdownGracefully END.\n"</span>, Thread.currentThread().getName());</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            <span class="comment">// ignore</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Promise"><a href="#Promise" class="headerlink" title="Promise"></a>Promise</h3><h4 id="io-netty-util-concurrent-Promise"><a href="#io-netty-util-concurrent-Promise" class="headerlink" title="io.netty.util.concurrent.Promise"></a>io.netty.util.concurrent.Promise</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Special &#123;<span class="doctag">@link</span> Future&#125; which is writable.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Promise</span>&lt;<span class="title">V</span>&gt; <span class="keyword">extends</span> <span class="title">Future</span>&lt;<span class="title">V</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Marks this future as a success and notifies all listeners.</span></span><br><span class="line"><span class="comment">     * If it is success or failed already, it will throw an &#123;<span class="doctag">@link</span> IllegalStateException&#125;.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">Promise&lt;V&gt; <span class="title">setSuccess</span><span class="params">(V result)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Marks this future as a success and notifies all listeners.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> &#123;<span class="doctag">@code</span> true&#125; if and only if successfully marked this future as</span></span><br><span class="line"><span class="comment">     *         a success. Otherwise &#123;<span class="doctag">@code</span> false&#125; because this future is</span></span><br><span class="line"><span class="comment">     *         already marked as either a success or a failure.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">trySuccess</span><span class="params">(V result)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">Promise&lt;V&gt; <span class="title">setFailure</span><span class="params">(Throwable cause)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">tryFailure</span><span class="params">(Throwable cause)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Make this future impossible to cancel.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> &#123;<span class="doctag">@code</span> true&#125; if and only if successfully marked this future as uncancellable</span></span><br><span class="line"><span class="comment">     *         or it is already done without being cancelled. </span></span><br><span class="line"><span class="comment">     *         &#123;<span class="doctag">@code</span> false&#125; if this future has been cancelled already.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">setUncancellable</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 覆写了 Future 部分方法，返回值限定为 Promise</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function">Promise&lt;V&gt; <span class="title">addListener</span><span class="params">(GenericFutureListener&lt;? extends Future&lt;? <span class="keyword">super</span> V&gt;&gt; listener)</span></span>;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function">Promise&lt;V&gt; <span class="title">removeListener</span><span class="params">(GenericFutureListener&lt;? extends Future&lt;? <span class="keyword">super</span> V&gt;&gt; listener)</span></span>;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function">Promise&lt;V&gt; <span class="title">await</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException</span>;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function">Promise&lt;V&gt; <span class="title">sync</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="Promise-示例"><a href="#Promise-示例" class="headerlink" title="Promise 示例"></a>Promise 示例</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PromiseDemo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">PrintTask</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> Promise promise;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="title">PrintTask</span><span class="params">(Promise promise)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">this</span>.promise = promise;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">int</span> times = <span class="keyword">this</span>.doWork();</span><br><span class="line">                promise.setSuccess(times);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                promise.setFailure(e);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">doWork</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">            <span class="keyword">boolean</span> bool = <span class="keyword">true</span>;</span><br><span class="line">            <span class="keyword">if</span> (bool) &#123;</span><br><span class="line">                <span class="comment">// throw new RuntimeException("error occured!");</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> Random().nextInt(<span class="number">10</span>) + <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        EventExecutor executor = <span class="keyword">new</span> DefaultEventExecutor();</span><br><span class="line">        Promise promise = executor.newPromise();</span><br><span class="line">        <span class="comment">// io.netty.util.concurrent.DefaultPromise</span></span><br><span class="line">        <span class="comment">// System.out.println(promise.getClass().getCanonicalName());</span></span><br><span class="line"></span><br><span class="line">        promise.addListener(<span class="keyword">new</span> FutureListener&lt;Integer&gt;() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">operationComplete</span><span class="params">(Future&lt;Integer&gt; future)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">                <span class="keyword">if</span> (future.isSuccess()) &#123;</span><br><span class="line">                    Integer result = future.get();</span><br><span class="line">                    System.out.printf(<span class="string">"%s === 任务成功, result=%s\n"</span>, Thread.currentThread().getName(), result);</span><br><span class="line">                    <span class="comment">// do something when task success</span></span><br><span class="line">                    <span class="keyword">if</span> (result &gt; <span class="number">5</span>) &#123;</span><br><span class="line">                        System.out.printf(<span class="string">"%s === GOOD, result &gt; 50\n"</span>, Thread.currentThread().getName());</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                        System.out.printf(<span class="string">"%s === SAD\n"</span>, Thread.currentThread().getName());</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (future.cause() != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    System.out.printf(<span class="string">"任务失败, cause is %s\n"</span>, future.cause().getMessage());</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;<span class="comment">// isCancelled()</span></span><br><span class="line">                    System.out.printf(<span class="string">"任务被取消, isCancelled=%s\n"</span>, future.isCancelled());</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        executor.submit(<span class="keyword">new</span> PrintTask(promise));</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 阻塞主线程</span></span><br><span class="line">        <span class="comment">// Promise promiseSync = executor.newPromise();</span></span><br><span class="line">        <span class="comment">// try &#123;</span></span><br><span class="line">        <span class="comment">//     promiseSync.sync();</span></span><br><span class="line">        <span class="comment">// &#125; catch (InterruptedException e) &#123;</span></span><br><span class="line">        <span class="comment">//     // ignore</span></span><br><span class="line">        <span class="comment">// &#125;</span></span><br><span class="line"></span><br><span class="line">        System.out.printf(<span class="string">"%s === executor.shutdownGracefully\n"</span>, Thread.currentThread().getName());</span><br><span class="line">        executor.shutdownGracefully();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>Promise promise = executor.newPromise();</code><br>DefaultEventExecutor 类的 structure 里找 <code>newPromise()</code> 方法，<br>发现是继承 AbstractEventExecutor 类的方法<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> &lt;V&gt; <span class="function">Promise&lt;V&gt; <span class="title">newPromise</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> DefaultPromise&lt;V&gt;(<span class="keyword">this</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>后面看看 Netty 具体是如何实现 Promise 的。</p>
+<h3 id="AbstractFuture"><a href="#AbstractFuture" class="headerlink" title="AbstractFuture"></a>AbstractFuture</h3><p>io.netty.util.concurrent.AbstractFuture<br>组合使用 await(); cause(); getNow() 方法，实现了 get() 方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractFuture</span>&lt;<span class="title">V</span>&gt; <span class="keyword">implements</span> <span class="title">Future</span>&lt;<span class="title">V</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> V <span class="title">get</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException, ExecutionException </span>&#123;</span><br><span class="line">        await();</span><br><span class="line"></span><br><span class="line">        Throwable cause = cause();</span><br><span class="line">        <span class="keyword">if</span> (cause == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> getNow();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (cause <span class="keyword">instanceof</span> CancellationException) &#123;</span><br><span class="line">            <span class="keyword">throw</span> (CancellationException) cause;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> ExecutionException(cause);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> V <span class="title">get</span><span class="params">(<span class="keyword">long</span> timeout, TimeUnit unit)</span> <span class="keyword">throws</span> InterruptedException, ExecutionException, TimeoutException </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (await(timeout, unit)) &#123;</span><br><span class="line">            Throwable cause = cause();</span><br><span class="line">            <span class="keyword">if</span> (cause == <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> getNow();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (cause <span class="keyword">instanceof</span> CancellationException) &#123;</span><br><span class="line">                <span class="keyword">throw</span> (CancellationException) cause;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> ExecutionException(cause);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> TimeoutException();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="DefaultPromise"><a href="#DefaultPromise" class="headerlink" title="DefaultPromise"></a>DefaultPromise</h3><p>io.netty.util.concurrent.DefaultPromise<br>DefaultPromise 底层，是通过 Object#wait()、Object#notifyAll() 实现的，锁是当前 DefaultPromise 实例。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br><span class="line">313</span><br><span class="line">314</span><br><span class="line">315</span><br><span class="line">316</span><br><span class="line">317</span><br><span class="line">318</span><br><span class="line">319</span><br><span class="line">320</span><br><span class="line">321</span><br><span class="line">322</span><br><span class="line">323</span><br><span class="line">324</span><br><span class="line">325</span><br><span class="line">326</span><br><span class="line">327</span><br><span class="line">328</span><br><span class="line">329</span><br><span class="line">330</span><br><span class="line">331</span><br><span class="line">332</span><br><span class="line">333</span><br><span class="line">334</span><br><span class="line">335</span><br><span class="line">336</span><br><span class="line">337</span><br><span class="line">338</span><br><span class="line">339</span><br><span class="line">340</span><br><span class="line">341</span><br><span class="line">342</span><br><span class="line">343</span><br><span class="line">344</span><br><span class="line">345</span><br><span class="line">346</span><br><span class="line">347</span><br><span class="line">348</span><br><span class="line">349</span><br><span class="line">350</span><br><span class="line">351</span><br><span class="line">352</span><br><span class="line">353</span><br><span class="line">354</span><br><span class="line">355</span><br><span class="line">356</span><br><span class="line">357</span><br><span class="line">358</span><br><span class="line">359</span><br><span class="line">360</span><br><span class="line">361</span><br><span class="line">362</span><br><span class="line">363</span><br><span class="line">364</span><br><span class="line">365</span><br><span class="line">366</span><br><span class="line">367</span><br><span class="line">368</span><br><span class="line">369</span><br><span class="line">370</span><br><span class="line">371</span><br><span class="line">372</span><br><span class="line">373</span><br><span class="line">374</span><br><span class="line">375</span><br><span class="line">376</span><br><span class="line">377</span><br><span class="line">378</span><br><span class="line">379</span><br><span class="line">380</span><br><span class="line">381</span><br><span class="line">382</span><br><span class="line">383</span><br><span class="line">384</span><br><span class="line">385</span><br><span class="line">386</span><br><span class="line">387</span><br><span class="line">388</span><br><span class="line">389</span><br><span class="line">390</span><br><span class="line">391</span><br><span class="line">392</span><br><span class="line">393</span><br><span class="line">394</span><br><span class="line">395</span><br><span class="line">396</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DefaultPromise</span>&lt;<span class="title">V</span>&gt; <span class="keyword">extends</span> <span class="title">AbstractFuture</span>&lt;<span class="title">V</span>&gt; <span class="keyword">implements</span> <span class="title">Promise</span>&lt;<span class="title">V</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// listener 的 operationComplete 方法中，可以再次使用 future.addListener() 继续添加 listener</span></span><br><span class="line">    <span class="comment">// 可以嵌套的Listener的最大层数，可见最大值为8</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> MAX_LISTENER_STACK_DEPTH = Math.min(<span class="number">8</span>,</span><br><span class="line">            SystemPropertyUtil.getInt(<span class="string">"io.netty.defaultPromise.maxListenerStackDepth"</span>, <span class="number">8</span>));</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 使用底层 Unsafe，保证更新 volatile Object result 操作的原子性（volatile 只能保证可见行）</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> AtomicReferenceFieldUpdater&lt;DefaultPromise, Object&gt; RESULT_UPDATER =</span><br><span class="line">            AtomicReferenceFieldUpdater.newUpdater(DefaultPromise.class, Object.class, <span class="string">"result"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Object SUCCESS = <span class="keyword">new</span> Object();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Object UNCANCELLABLE = <span class="keyword">new</span> Object();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> CauseHolder CANCELLATION_CAUSE_HOLDER = <span class="keyword">new</span> CauseHolder(ThrowableUtil.unknownStackTrace(</span><br><span class="line">            <span class="keyword">new</span> CancellationException(), DefaultPromise.class, <span class="string">"cancel(...)"</span>));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> Object result;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// listeners 是 Object 类型：之所以这样设计，是因为大多数情况下listener只有一个，用集合/数组会造成浪费</span></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * One or more listeners. Can be a &#123;<span class="doctag">@link</span> GenericFutureListener&#125; or a &#123;<span class="doctag">@link</span> DefaultFutureListeners&#125;.</span></span><br><span class="line"><span class="comment">     * If &#123;<span class="doctag">@code</span> null&#125;, it means either 1) no listeners were added yet or 2) all listeners were notified.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * Threading - synchronized(this). We must support adding listeners when there is no EventExecutor.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> Object listeners;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 阻塞等待该结果的线程数</span></span><br><span class="line"><span class="comment">     * Threading - synchronized(this). We are required to hold the monitor to use Java's underlying wait()/notifyAll().</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">short</span> waiters;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 通知正在进行标识</span></span><br><span class="line"><span class="comment">     * Threading - synchronized(this). We must prevent concurrent notification and FIFO listener notification if the executor changes.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> notifyingListeners;</span><br><span class="line">  </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Get the executor used to notify listeners when this promise is complete.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> EventExecutor executor;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> EventExecutor <span class="title">executor</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> executor;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">DefaultPromise</span><span class="params">(EventExecutor executor)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.executor = checkNotNull(executor, <span class="string">"executor"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// only for subclasses</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="title">DefaultPromise</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        executor = <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ========== add/remove listener</span></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Promise&lt;V&gt; <span class="title">addListener</span><span class="params">(GenericFutureListener&lt;? extends Future&lt;? <span class="keyword">super</span> V&gt;&gt; listener)</span> </span>&#123;</span><br><span class="line">        checkNotNull(listener, <span class="string">"listener"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 线程安全地添加 listener</span></span><br><span class="line">        <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</span><br><span class="line">            addListener0(listener);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (isDone()) &#123;</span><br><span class="line">            notifyListeners();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Promise&lt;V&gt; <span class="title">removeListener</span><span class="params">(<span class="keyword">final</span> GenericFutureListener&lt;? extends Future&lt;? <span class="keyword">super</span> V&gt;&gt; listener)</span> </span>&#123;</span><br><span class="line">        checkNotNull(listener, <span class="string">"listener"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 线程安全地删除 listener</span></span><br><span class="line">        <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</span><br><span class="line">            removeListener0(listener);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">addListener0</span><span class="params">(GenericFutureListener&lt;? extends Future&lt;? <span class="keyword">super</span> V&gt;&gt; listener)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (listeners == <span class="keyword">null</span>) &#123;</span><br><span class="line">            listeners = listener;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (listeners <span class="keyword">instanceof</span> DefaultFutureListeners) &#123;</span><br><span class="line">            ((DefaultFutureListeners) listeners).add(listener);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            listeners = <span class="keyword">new</span> DefaultFutureListeners((GenericFutureListener&lt;?&gt;) listeners, listener);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">removeListener0</span><span class="params">(GenericFutureListener&lt;? extends Future&lt;? <span class="keyword">super</span> V&gt;&gt; listener)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (listeners <span class="keyword">instanceof</span> DefaultFutureListeners) &#123;</span><br><span class="line">            ((DefaultFutureListeners) listeners).remove(listener);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (listeners == listener) &#123;</span><br><span class="line">            listeners = <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ========== set status/result</span></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Promise&lt;V&gt; <span class="title">setSuccess</span><span class="params">(V result)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (setSuccess0(result)) &#123;</span><br><span class="line">            notifyListeners();</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"complete already: "</span> + <span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">trySuccess</span><span class="params">(V result)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (setSuccess0(result)) &#123;</span><br><span class="line">            notifyListeners();</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">setSuccess0</span><span class="params">(V result)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> setValue0(result == <span class="keyword">null</span> ? SUCCESS : result);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Promise&lt;V&gt; <span class="title">setFailure</span><span class="params">(Throwable cause)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (setFailure0(cause)) &#123;</span><br><span class="line">            notifyListeners();</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"complete already: "</span> + <span class="keyword">this</span>, cause);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">tryFailure</span><span class="params">(Throwable cause)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (setFailure0(cause)) &#123;</span><br><span class="line">            notifyListeners();</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">setFailure0</span><span class="params">(Throwable cause)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> setValue0(<span class="keyword">new</span> CauseHolder(checkNotNull(cause, <span class="string">"cause"</span>)));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">setValue0</span><span class="params">(Object objResult)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 当前结果为 null 或 UNCANCELLABLE 时，才可设置，一旦设置 OK，后续再设置肯定不成功</span></span><br><span class="line">        <span class="keyword">if</span> (RESULT_UPDATER.compareAndSet(<span class="keyword">this</span>, <span class="keyword">null</span>, objResult) ||</span><br><span class="line">            RESULT_UPDATER.compareAndSet(<span class="keyword">this</span>, UNCANCELLABLE, objResult)) &#123;</span><br><span class="line">            checkNotifyWaiters();</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// synchronized 持有当前 DefaultPromise 实例锁，与 wait() 一致</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">checkNotifyWaiters</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (waiters &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="comment">// 确实有 waiting 等待的线程，才 notifyAll</span></span><br><span class="line">            notifyAll();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">setUncancellable</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (RESULT_UPDATER.compareAndSet(<span class="keyword">this</span>, <span class="keyword">null</span>, UNCANCELLABLE)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        Object result = <span class="keyword">this</span>.result;</span><br><span class="line">        <span class="keyword">return</span> !isDone0(result) || !isCancelled0(result);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">cancel</span><span class="params">(<span class="keyword">boolean</span> mayInterruptIfRunning)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (RESULT_UPDATER.compareAndSet(<span class="keyword">this</span>, <span class="keyword">null</span>, CANCELLATION_CAUSE_HOLDER)) &#123;</span><br><span class="line">            checkNotifyWaiters();</span><br><span class="line">            notifyListeners();</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ========== get status/result</span></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isSuccess</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        Object result = <span class="keyword">this</span>.result;</span><br><span class="line">        <span class="keyword">return</span> result != <span class="keyword">null</span> &amp;&amp; result != UNCANCELLABLE &amp;&amp; !(result <span class="keyword">instanceof</span> CauseHolder);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isCancellable</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> result == <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Throwable <span class="title">cause</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        Object result = <span class="keyword">this</span>.result;</span><br><span class="line">        <span class="keyword">return</span> (result <span class="keyword">instanceof</span> CauseHolder) ? ((CauseHolder) result).cause : <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isCancelled</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> isCancelled0(result);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isDone</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> isDone0(result);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">isCancelled0</span><span class="params">(Object result)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> result <span class="keyword">instanceof</span> CauseHolder &amp;&amp; ((CauseHolder) result).cause <span class="keyword">instanceof</span> CancellationException;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">isDone0</span><span class="params">(Object result)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> result != <span class="keyword">null</span> &amp;&amp; result != UNCANCELLABLE;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> V <span class="title">getNow</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        Object result = <span class="keyword">this</span>.result;</span><br><span class="line">        <span class="keyword">if</span> (result <span class="keyword">instanceof</span> CauseHolder || result == SUCCESS || result == UNCANCELLABLE) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> (V) result;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ========== sync/await</span></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Promise&lt;V&gt; <span class="title">sync</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        await();</span><br><span class="line">        rethrowIfFailed();</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">rethrowIfFailed</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        Throwable cause = cause();</span><br><span class="line">        <span class="keyword">if</span> (cause == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        PlatformDependent.throwException(cause);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Promise&lt;V&gt; <span class="title">await</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        <span class="comment">// 异步操作已经完成，直接返回</span></span><br><span class="line">        <span class="keyword">if</span> (isDone()) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (Thread.interrupted()) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> InterruptedException(toString());</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 死锁检测: 不能在执行异步操作的线程里，执行 await() 方法</span></span><br><span class="line">        checkDeadLock();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 持有当前 DefaultPromise 实例锁，然后把当前线程添加到锁的 wait-set 中</span></span><br><span class="line">        <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</span><br><span class="line">            <span class="comment">// 使用 while 不用 if，是为了防止被意外唤醒（其它地方的 notifyAll）</span></span><br><span class="line">            <span class="comment">// while 保证唤醒后继续判断 wait 条件 !isDone()</span></span><br><span class="line">            <span class="keyword">while</span> (!isDone()) &#123;</span><br><span class="line">                incWaiters();</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    wait();</span><br><span class="line">                &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                    decWaiters();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 不能在执行异步操作的线程里，执行 await() 方法</span></span><br><span class="line">    <span class="comment">// 检查当前调用方法的线程是不是执行器的线程如果是则说明发生了死锁需要抛出异常停止死锁操作</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">checkDeadLock</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        EventExecutor e = executor();</span><br><span class="line">        <span class="keyword">if</span> (e != <span class="keyword">null</span> &amp;&amp; e.inEventLoop()) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> BlockingOperationException(toString());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">incWaiters</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (waiters == Short.MAX_VALUE) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"too many waiters: "</span> + <span class="keyword">this</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        ++waiters;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">decWaiters</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        --waiters;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ========== notify listeners</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">notifyListeners</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        EventExecutor executor = executor();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 设置的用于 notify listeners 的线程，就是当前异步操作的线程，直接执行</span></span><br><span class="line">        <span class="keyword">if</span> (executor.inEventLoop()) &#123;</span><br><span class="line">            <span class="keyword">final</span> InternalThreadLocalMap threadLocals = InternalThreadLocalMap.get();</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> stackDepth = threadLocals.futureListenerStackDepth();</span><br><span class="line">            <span class="keyword">if</span> (stackDepth &lt; MAX_LISTENER_STACK_DEPTH) &#123;</span><br><span class="line">                <span class="comment">// 执行前增加嵌套层数</span></span><br><span class="line">                threadLocals.setFutureListenerStackDepth(stackDepth + <span class="number">1</span>);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    notifyListenersNow();</span><br><span class="line">                &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                    <span class="comment">// 执行完毕，无论成功与否，都要回滚嵌套层数</span></span><br><span class="line">                    threadLocals.setFutureListenerStackDepth(stackDepth);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 设置的用于 notify listeners 的线程，是其它线程，则将它加到该线程的执行任务列表中</span></span><br><span class="line">        safeExecute(executor, <span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                notifyListenersNow();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">notifyListenersNow</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        Object listeners;</span><br><span class="line">        <span class="comment">// 其它线程可能会执行添加 listener 操作</span></span><br><span class="line">        <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</span><br><span class="line">            <span class="comment">// Only proceed if there are listeners to notify and we are not already notifying listeners.</span></span><br><span class="line">            <span class="keyword">if</span> (notifyingListeners || <span class="keyword">this</span>.listeners == <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            notifyingListeners = <span class="keyword">true</span>;</span><br><span class="line">            listeners = <span class="keyword">this</span>.listeners;</span><br><span class="line">            <span class="keyword">this</span>.listeners = <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">            <span class="keyword">if</span> (listeners <span class="keyword">instanceof</span> DefaultFutureListeners) &#123;</span><br><span class="line">                notifyListeners0((DefaultFutureListeners) listeners);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                notifyListener0(<span class="keyword">this</span>, (GenericFutureListener&lt;?&gt;) listeners);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (<span class="keyword">this</span>.listeners == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    <span class="comment">// Nothing can throw from within this method,</span></span><br><span class="line">                    <span class="comment">// so setting notifyingListeners back to false does not need to be in a finally block.</span></span><br><span class="line">                    notifyingListeners = <span class="keyword">false</span>;</span><br><span class="line">                    <span class="keyword">return</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                listeners = <span class="keyword">this</span>.listeners;</span><br><span class="line">                <span class="keyword">this</span>.listeners = <span class="keyword">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">notifyListeners0</span><span class="params">(DefaultFutureListeners listeners)</span> </span>&#123;</span><br><span class="line">        GenericFutureListener&lt;?&gt;[] a = listeners.listeners();</span><br><span class="line">        <span class="keyword">int</span> size = listeners.size();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; size; i ++) &#123;</span><br><span class="line">            notifyListener0(<span class="keyword">this</span>, a[i]);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@SuppressWarnings</span>(&#123; <span class="string">"unchecked"</span>, <span class="string">"rawtypes"</span> &#125;)</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">notifyListener0</span><span class="params">(Future future, GenericFutureListener l)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            l.operationComplete(future);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">            <span class="keyword">if</span> (logger.isWarnEnabled()) &#123;</span><br><span class="line">                logger.warn(<span class="string">"An exception was thrown by "</span> + l.getClass().getName() + <span class="string">".operationComplete()"</span>, t);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">CauseHolder</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> Throwable cause;</span><br><span class="line">        CauseHolder(Throwable cause) &#123;</span><br><span class="line">            <span class="keyword">this</span>.cause = cause;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">safeExecute</span><span class="params">(EventExecutor executor, Runnable task)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            executor.execute(task);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">            rejectedExecutionLogger.error(<span class="string">"Failed to submit a listener notification task. Event loop shut down?"</span>, t);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="ChannelFuture、ChannelPromise"><a href="#ChannelFuture、ChannelPromise" class="headerlink" title="ChannelFuture、ChannelPromise"></a>ChannelFuture、ChannelPromise</h3><p>ChannelFuture、ChannelPromise 扩展，主要是为了获取关联的 Channel 对象，用于异步处理 Channel 中的事件。</p>
+<h4 id="ChannelFuture"><a href="#ChannelFuture" class="headerlink" title="ChannelFuture"></a>ChannelFuture</h4><p>io.netty.channel.ChannelFuture</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ChannelFuture</span> <span class="keyword">extends</span> <span class="title">Future</span>&lt;<span class="title">Void</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Returns a channel where the I/O operation associated with this future takes place.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">Channel <span class="title">channel</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Returns &#123;<span class="doctag">@code</span> true&#125; if this &#123;<span class="doctag">@link</span> ChannelFuture&#125; is a void future</span></span><br><span class="line"><span class="comment">     * and so not allow to call any of the following methods:</span></span><br><span class="line"><span class="comment">     * &lt;ul&gt;</span></span><br><span class="line"><span class="comment">     *     &lt;li&gt;&#123;<span class="doctag">@link</span> #addListener(GenericFutureListener)&#125;&lt;/li&gt;</span></span><br><span class="line"><span class="comment">     *     &lt;li&gt;&#123;<span class="doctag">@link</span> #await()&#125;&lt;/li&gt;</span></span><br><span class="line"><span class="comment">     *     &lt;li&gt;&#123;<span class="doctag">@link</span> #sync()&#125;&lt;/li&gt;</span></span><br><span class="line"><span class="comment">     * &lt;/ul&gt;</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">isVoid</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 覆写了 Future 部分方法，返回值限定为 ChannelFuture</span></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function">ChannelFuture <span class="title">addListener</span><span class="params">(GenericFutureListener&lt;? extends Future&lt;? <span class="keyword">super</span> Void&gt;&gt; listener)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function">ChannelFuture <span class="title">removeListener</span><span class="params">(GenericFutureListener&lt;? extends Future&lt;? <span class="keyword">super</span> Void&gt;&gt; listener)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function">ChannelFuture <span class="title">sync</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function">ChannelFuture <span class="title">await</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException</span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="ChannelPromise"><a href="#ChannelPromise" class="headerlink" title="ChannelPromise"></a>ChannelPromise</h4><p>io.netty.channel.ChannelPromise</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Special &#123;<span class="doctag">@link</span> ChannelFuture&#125; which is writable.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ChannelPromise</span> <span class="keyword">extends</span> <span class="title">ChannelFuture</span>, <span class="title">Promise</span>&lt;<span class="title">Void</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Returns a new &#123;<span class="doctag">@link</span> ChannelPromise&#125; if &#123;<span class="doctag">@link</span> #isVoid()&#125; returns &#123;<span class="doctag">@code</span> true&#125; otherwise itself.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">ChannelPromise <span class="title">unvoid</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">ChannelPromise <span class="title">setSuccess</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">trySuccess</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function">Channel <span class="title">channel</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 覆写了 ChannelFuture, Promise&lt;Void&gt; 部分方法，返回值限定为 ChannelPromise</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function">ChannelPromise <span class="title">setSuccess</span><span class="params">(Void result)</span></span>;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function">ChannelPromise <span class="title">setFailure</span><span class="params">(Throwable cause)</span></span>;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function">ChannelPromise <span class="title">addListener</span><span class="params">(GenericFutureListener&lt;? extends Future&lt;? <span class="keyword">super</span> Void&gt;&gt; listener)</span></span>;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function">ChannelPromise <span class="title">removeListener</span><span class="params">(GenericFutureListener&lt;? extends Future&lt;? <span class="keyword">super</span> Void&gt;&gt; listener)</span></span>;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function">ChannelPromise <span class="title">sync</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException</span>;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function">ChannelPromise <span class="title">await</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><p>最常见的关闭等待操作<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Bind and start to accept incoming connections.</span></span><br><span class="line">ChannelFuture channelFuture = serverBoot.bind(<span class="string">"127.0.0.1"</span>, PORT).sync();</span><br><span class="line"><span class="comment">// Wait until the server socket is closed.</span></span><br><span class="line">channelFuture.channel().closeFuture().sync();</span><br></pre></td></tr></table></figure></p>
+<ol>
+<li><p><code>channelFuture.channel()</code> 获取关联的 channel</p>
+</li>
+<li><p>NioServerSocketChannel 的 <code>closeFuture()</code>，继承的 AbstractChannel 方法</p>
+</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> CloseFuture closeFuture = <span class="keyword">new</span> CloseFuture(<span class="keyword">this</span>);</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> ChannelFuture <span class="title">closeFuture</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> closeFuture;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>最后执行的实际是 CloseFuture#sync()，当前线程 (main) 阻塞在 CloseFuture 上</li>
+</ol>
+<p>看看线程信息，确实是这样的<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">$ jps</span><br><span class="line"><span class="number">64928</span> EchoServer</span><br><span class="line"></span><br><span class="line">$ jstack -l <span class="number">64928</span></span><br><span class="line">...</span><br><span class="line"><span class="string">"main"</span> #<span class="number">1</span> prio=<span class="number">5</span> os_prio=<span class="number">31</span> tid=<span class="number">0x00007fef4f809000</span> nid=<span class="number">0x1803</span> in Object.wait() [<span class="number">0x000070000bc30000</span>]</span><br><span class="line">   java.lang.Thread.State: WAITING (on object monitor)</span><br><span class="line">	at java.lang.Object.wait(Native Method)</span><br><span class="line">	- waiting on &lt;<span class="number">0x00000007960ff6f0</span>&gt; (a io.netty.channel.AbstractChannel$CloseFuture)</span><br><span class="line">	at java.lang.Object.wait(Object.java:<span class="number">502</span>)</span><br><span class="line">	at io.netty.util.concurrent.DefaultPromise.await(DefaultPromise.java:<span class="number">231</span>)</span><br><span class="line">	- locked &lt;<span class="number">0x00000007960ff6f0</span>&gt; (a io.netty.channel.AbstractChannel$CloseFuture)</span><br><span class="line">	at io.netty.channel.DefaultChannelPromise.await(DefaultChannelPromise.java:<span class="number">131</span>)</span><br><span class="line">	at io.netty.channel.DefaultChannelPromise.await(DefaultChannelPromise.java:<span class="number">30</span>)</span><br><span class="line">	at io.netty.util.concurrent.DefaultPromise.sync(DefaultPromise.java:<span class="number">337</span>)</span><br><span class="line">	at io.netty.channel.DefaultChannelPromise.sync(DefaultChannelPromise.java:<span class="number">119</span>)</span><br><span class="line">	at io.netty.channel.DefaultChannelPromise.sync(DefaultChannelPromise.java:<span class="number">30</span>)</span><br><span class="line">	at org.wangming.demo.netty.echo.EchoServer.main(EchoServer.java:<span class="number">56</span>)</span><br><span class="line"></span><br><span class="line">   Locked ownable synchronizers:</span><br><span class="line">	- None</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<p>那么，什么时候 main 线程会被唤醒继续执行呢？</p>
+<p>NioServerSocketChannel#close() -&gt; DefaultChannelPipeline#close() -&gt; TailContext#close() -&gt; HeadContext#close() -&gt; AbstractUnsafe#close(…)</p>
+<p>io.netty.channel.AbstractChannel.AbstractUnsafe#close(io.netty.channel.ChannelPromise)<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">close</span><span class="params">(<span class="keyword">final</span> ChannelPromise promise)</span> </span>&#123;</span><br><span class="line">    assertEventLoop();</span><br><span class="line">    close(promise, CLOSE_CLOSED_CHANNEL_EXCEPTION, CLOSE_CLOSED_CHANNEL_EXCEPTION, <span class="keyword">false</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>io.netty.channel.AbstractChannel.AbstractUnsafe#close<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">close</span><span class="params">(<span class="keyword">final</span> ChannelPromise promise, <span class="keyword">final</span> Throwable cause,</span></span></span><br><span class="line"><span class="function"><span class="params">                    <span class="keyword">final</span> ClosedChannelException closeCause, <span class="keyword">final</span> <span class="keyword">boolean</span> notify)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// Close the channel and fail the queued messages in all cases.</span></span><br><span class="line">    doClose0(promise);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">doClose0</span><span class="params">(ChannelPromise promise)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        doClose();</span><br><span class="line">        closeFuture.setClosed();</span><br><span class="line">        safeSetSuccess(promise);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">        closeFuture.setClosed();</span><br><span class="line">        safeSetFailure(promise, t);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>CloseFuture#setClosed() 会执行 trySuccess()，这样就会在 CloseFuture 对象上执行 notifyAll，唤醒 main 线程。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">setClosed</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">super</span>.trySuccess();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="其它异步编程框架"><a href="#其它异步编程框架" class="headerlink" title="其它异步编程框架"></a>其它异步编程框架</h3><ul>
+<li>JDK 8 新加入的 <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html" target="_blank" rel="noopener">CompletableFuture</a></li>
+<li><a href="https://github.com/ReactiveX/RxJava" target="_blank" rel="noopener">RxJava</a></li>
+<li><a href="https://github.com/google/guava/wiki/ListenableFutureExplained" target="_blank" rel="noopener">Guava ListenableFuture</a></li>
+</ul>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><blockquote>
+<p>本文参考了互联网上大家的分享，就不一一列举，在此一并谢过。<br>也希望本文，能对大家有所帮助，若有错误，还请谅解、指正。</p>
+</blockquote>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/netty/" rel="tag"># netty</a>
+          
+            <a href="/tags/asynchronous/" rel="tag"># asynchronous</a>
+          
+            <a href="/tags/future/" rel="tag"># future</a>
+          
+            <a href="/tags/promise/" rel="tag"># promise</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/01/09/netty-intro/" rel="next" title="Netty 概览">
+                <i class="fa fa-chevron-left"></i> Netty 概览
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpeg"
+                alt="moonrunwater" />
+            
+              <p class="site-author-name" itemprop="name">moonrunwater</p>
+              <p class="site-description motion-element" itemprop="description">学而不思则罔，思而不学则殆</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">6</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">9</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Netty-是异步的"><span class="nav-number">1.</span> <span class="nav-text">Netty 是异步的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Netty-Future-体系"><span class="nav-number">2.</span> <span class="nav-text">Netty Future 体系</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#JDK-Future"><span class="nav-number">2.1.</span> <span class="nav-text">JDK Future</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#java-util-concurrent-Future"><span class="nav-number">2.1.1.</span> <span class="nav-text">java.util.concurrent.Future</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#JDK-Future-示例"><span class="nav-number">2.1.2.</span> <span class="nav-text">JDK Future 示例</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#JDK-Future-缺点"><span class="nav-number">2.1.3.</span> <span class="nav-text">JDK Future 缺点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Future"><span class="nav-number">2.2.</span> <span class="nav-text">Future</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#io-netty-util-concurrent-Future"><span class="nav-number">2.2.1.</span> <span class="nav-text">io.netty.util.concurrent.Future</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Future-示例"><span class="nav-number">2.2.2.</span> <span class="nav-text">Future 示例</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Promise"><span class="nav-number">2.3.</span> <span class="nav-text">Promise</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#io-netty-util-concurrent-Promise"><span class="nav-number">2.3.1.</span> <span class="nav-text">io.netty.util.concurrent.Promise</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Promise-示例"><span class="nav-number">2.3.2.</span> <span class="nav-text">Promise 示例</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AbstractFuture"><span class="nav-number">2.4.</span> <span class="nav-text">AbstractFuture</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DefaultPromise"><span class="nav-number">2.5.</span> <span class="nav-text">DefaultPromise</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ChannelFuture、ChannelPromise"><span class="nav-number">2.6.</span> <span class="nav-text">ChannelFuture、ChannelPromise</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#ChannelFuture"><span class="nav-number">2.6.1.</span> <span class="nav-text">ChannelFuture</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ChannelPromise"><span class="nav-number">2.6.2.</span> <span class="nav-text">ChannelPromise</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#示例"><span class="nav-number">2.7.</span> <span class="nav-text">示例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#其它异步编程框架"><span class="nav-number">2.8.</span> <span class="nav-text">其它异步编程框架</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">moonrunwater</span>
+
+  
+
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Muse</a></div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "uCxAlVjLtxxWS7hWJYI28kPN-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "uCxAlVjLtxxWS7hWJYI28kPN-gzGzoHsz",
+                'X-LC-Key': "YxJ09zFe3juR2BIxGN0hKKpw",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
