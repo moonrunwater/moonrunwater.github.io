@@ -111,15 +111,15 @@
   <meta name="description" content="摘要:Netty 中的所有 IO 操作都是异步的，也就是说任何 IO 调用都将立即返回，返回的 ChannelFuture 实例会在操作完成时，通知用户该操作的状态、结果。">
 <meta name="keywords" content="netty,asynchronous,future,promise">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Netty 异步调用机制 Future &amp; Promise">
+<meta property="og:title" content="Netty Future &amp; Promise">
 <meta property="og:url" content="https://moonrunwater.github.io/2019/04/01/netty-future-promise/index.html">
 <meta property="og:site_name" content="moonrunwater">
 <meta property="og:description" content="摘要:Netty 中的所有 IO 操作都是异步的，也就是说任何 IO 调用都将立即返回，返回的 ChannelFuture 实例会在操作完成时，通知用户该操作的状态、结果。">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://moonrunwater.github.io/2019/04/01/netty-future-promise/future-hierarchy.png">
-<meta property="og:updated_time" content="2019-04-05T13:56:32.938Z">
+<meta property="og:updated_time" content="2019-04-05T14:01:25.549Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Netty 异步调用机制 Future &amp; Promise">
+<meta name="twitter:title" content="Netty Future &amp; Promise">
 <meta name="twitter:description" content="摘要:Netty 中的所有 IO 操作都是异步的，也就是说任何 IO 调用都将立即返回，返回的 ChannelFuture 实例会在操作完成时，通知用户该操作的状态、结果。">
 <meta name="twitter:image" content="https://moonrunwater.github.io/2019/04/01/netty-future-promise/future-hierarchy.png">
 
@@ -138,7 +138,7 @@
   };
 </script>
 
-  <title>Netty 异步调用机制 Future & Promise | moonrunwater</title>
+  <title>Netty Future & Promise | moonrunwater</title>
   
 
 
@@ -330,7 +330,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">Netty 异步调用机制 Future & Promise
+          <h1 class="post-title" itemprop="name headline">Netty Future & Promise
               
             
           </h1>
@@ -372,7 +372,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-05 21:56:32" itemprop="dateModified" datetime="2019-04-05T21:56:32+08:00">2019-04-05</time>
+                <time title="修改时间：2019-04-05 22:01:25" itemprop="dateModified" datetime="2019-04-05T22:01:25+08:00">2019-04-05</time>
               
             
           </span>
@@ -403,7 +403,7 @@
 
           
           
-             <span id="/2019/04/01/netty-future-promise/" class="leancloud_visitors" data-flag-title="Netty 异步调用机制 Future & Promise">
+             <span id="/2019/04/01/netty-future-promise/" class="leancloud_visitors" data-flag-title="Netty Future & Promise">
                <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -435,7 +435,7 @@
 
       
         <p>摘要:<br>Netty 中的所有 IO 操作都是异步的，也就是说任何 IO 调用都将立即返回，返回的 ChannelFuture 实例会在操作完成时，通知用户该操作的状态、结果。<br><a id="more"></a></p>
-<h2 id="异步调用"><a href="#异步调用" class="headerlink" title="异步调用"></a>异步调用</h2><p>我们经常听到同步、异步，为了理解，通常都是通过举例来说明。<br>比如，<br>同步调用，好比你在包子店点了一笼小笼包，一直在柜台等到小笼包蒸熟，然后开始吃；<br>异步调用，好比你在包子店点了一笼小笼包，老板给了你一个小票（凭证），你拿着小票可以去干别的事情，等到差不多时候，你<strong>自己</strong>拿着小票去取小笼包来吃（Future），当然还有一种更好的方式是，你的小笼包蒸熟后，老板直接电话<strong>通知</strong>你凭小票来取小笼包（Promise）。</p>
+<h2 id="异步调用"><a href="#异步调用" class="headerlink" title="异步调用"></a>异步调用</h2><p>我们经常听到同步、异步，为了理解，通常都是通过举例来说明。<br>比如，<br>同步调用，好比你在包子店点了一笼小笼包，一直在柜台等到小笼包蒸熟，然后开始吃；<br>异步调用，好比你在包子店点了一笼小笼包，老板给了你一个小票（凭证），你拿着小票可以去干别的事情，等到差不多时候，你 <strong>自己主动</strong> 拿着小票去取小笼包来吃（Future），当然还有一种更好的方式是，你的小笼包蒸熟后，老板直接电话 <strong>通知</strong> 你凭小票来取小笼包（Promise）。</p>
 <p>但是好像很少有人给出它们的定义，举例有助于概念理解，定义有助于精确理解。<br>下面是我个人的一些理解。</p>
 <p>什么是同步调用？</p>
 <ul>
@@ -500,10 +500,9 @@
 <h3 id="Future"><a href="#Future" class="headerlink" title="Future"></a>Future</h3><h4 id="io-netty-util-concurrent-Future"><a href="#io-netty-util-concurrent-Future" class="headerlink" title="io.netty.util.concurrent.Future"></a>io.netty.util.concurrent.Future</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The result of an asynchronous operation.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Future</span>&lt;<span class="title">V</span>&gt; <span class="keyword">extends</span> <span class="title">java</span>.<span class="title">util</span>.<span class="title">concurrent</span>.<span class="title">Future</span>&lt;<span class="title">V</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Returns &#123;<span class="doctag">@code</span> true&#125; if and only if the I/O operation was completed successfully.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">isSuccess</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Returns the cause of the failed I/O operation if the I/O operation has failed.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">Throwable <span class="title">cause</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">isCancellable</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Adds the specified listener to this future. The specified listener is notified when this future is done.  </span></span><br><span class="line"><span class="comment">     * If this future is already completed, the specified listener is notified immediately.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">Future&lt;V&gt; <span class="title">addListener</span><span class="params">(GenericFutureListener&lt;? extends Future&lt;? <span class="keyword">super</span> V&gt;&gt; listener)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">Future&lt;V&gt; <span class="title">removeListener</span><span class="params">(GenericFutureListener&lt;? extends Future&lt;? <span class="keyword">super</span> V&gt;&gt; listener)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Waits for this future until it is done,</span></span><br><span class="line"><span class="comment">     * and rethrows the cause of the failure if this future failed.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">Future&lt;V&gt; <span class="title">sync</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Waits for this future to be completed.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">Future&lt;V&gt; <span class="title">await</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Return the result without blocking. If the future is not done yet this will return &#123;<span class="doctag">@code</span> null&#125;.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">V <span class="title">getNow</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>Netty Future 解决了 JDK Future 的两个问题:</p>
 <ol>
-<li>Future 有两种状态 Uncompleted、Completed，其中 Completed 又有三种状态</li>
-</ol>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">                                     +---------------------------+</span><br><span class="line">                                     | Completed successfully    |</span><br><span class="line">                                     +---------------------------+</span><br><span class="line">                                +----&gt;      isDone() = <span class="keyword">true</span>      |</span><br><span class="line">+--------------------------+    |    |   isSuccess() = <span class="keyword">true</span>      |</span><br><span class="line">|        Uncompleted       |    |    +===========================+</span><br><span class="line">+--------------------------+    |    | Completed with failure    |</span><br><span class="line">|      isDone() = <span class="keyword">false</span>    |    |    +---------------------------+</span><br><span class="line">|   isSuccess() = <span class="keyword">false</span>    |----+----&gt;      isDone() = <span class="keyword">true</span>      |</span><br><span class="line">| isCancelled() = <span class="keyword">false</span>    |    |    |       cause() = non-<span class="keyword">null</span>  |</span><br><span class="line">|       cause() = <span class="keyword">null</span>     |    |    +===========================+</span><br><span class="line">+--------------------------+    |    | Completed by cancellation |</span><br><span class="line">                                |    +---------------------------+</span><br><span class="line">                                +----&gt;      isDone() = <span class="keyword">true</span>      |</span><br><span class="line">                                     | isCancelled() = <span class="keyword">true</span>      |</span><br><span class="line">                                     +---------------------------+</span><br></pre></td></tr></table></figure>
-<ol start="2">
+<li><p>Future 有两种状态 Uncompleted、Completed，其中 Completed 又有三种状态</p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">                                    +---------------------------+</span><br><span class="line">                                    | Completed successfully    |</span><br><span class="line">                                    +---------------------------+</span><br><span class="line">                                +----&gt;      isDone() = <span class="keyword">true</span>      |</span><br><span class="line">+--------------------------+    |    |   isSuccess() = <span class="keyword">true</span>      |</span><br><span class="line">|        Uncompleted       |    |    +===========================+</span><br><span class="line">+--------------------------+    |    | Completed with failure    |</span><br><span class="line">|      isDone() = <span class="keyword">false</span>    |    |    +---------------------------+</span><br><span class="line">|   isSuccess() = <span class="keyword">false</span>    |----+----&gt;      isDone() = <span class="keyword">true</span>      |</span><br><span class="line">| isCancelled() = <span class="keyword">false</span>    |    |    |       cause() = non-<span class="keyword">null</span>  |</span><br><span class="line">|       cause() = <span class="keyword">null</span>     |    |    +===========================+</span><br><span class="line">+--------------------------+    |    | Completed by cancellation |</span><br><span class="line">                                |    +---------------------------+</span><br><span class="line">                                +----&gt;      isDone() = <span class="keyword">true</span>      |</span><br><span class="line">                                    | isCancelled() = <span class="keyword">true</span>      |</span><br><span class="line">                                    +---------------------------+</span><br></pre></td></tr></table></figure>
+</li>
 <li><p>addListener(listener)，可以添加操作完成后的回调操作</p>
 </li>
 <li><p>await()、sync()，可以以阻塞的方式等待异步操作完成</p>
