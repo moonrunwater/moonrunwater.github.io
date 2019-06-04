@@ -108,23 +108,23 @@
 
 
 
-  <meta name="description" content="rocketmq 存储文件详解概览 rocketmq 默认存储根目录是 $HOME/store，可以在修改配置文件中进行更改1storePathRootDir=$HOME/store rocketmq 默认存储根目录结构，如下 1234567891011121314151617181920212223242526272829303132333435363738394041424344# tree">
+  <meta name="description" content="rocketmq 存储文件详解概览 rocketmq 默认存储根目录是 $HOME/store，可以在修改配置文件中进行更改1storePathRootDir=$HOME/store">
 <meta name="keywords" content="rocketmq,存储文件">
 <meta property="og:type" content="article">
 <meta property="og:title" content="rocketmq 存储文件详解">
 <meta property="og:url" content="https://moonrunwater.github.io/2019/05/08/rocketmq-store/index.html">
 <meta property="og:site_name" content="moonrunwater">
-<meta property="og:description" content="rocketmq 存储文件详解概览 rocketmq 默认存储根目录是 $HOME/store，可以在修改配置文件中进行更改1storePathRootDir=$HOME/store rocketmq 默认存储根目录结构，如下 1234567891011121314151617181920212223242526272829303132333435363738394041424344# tree">
+<meta property="og:description" content="rocketmq 存储文件详解概览 rocketmq 默认存储根目录是 $HOME/store，可以在修改配置文件中进行更改1storePathRootDir=$HOME/store">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://moonrunwater.github.io/2019/05/08/rocketmq-store/rocketmq-store.png">
 <meta property="og:image" content="https://moonrunwater.github.io/2019/05/08/rocketmq-store/commitlog-consumequeue.png">
 <meta property="og:image" content="https://moonrunwater.github.io/2019/05/08/rocketmq-store/consumequeue-unit.png">
 <meta property="og:image" content="https://moonrunwater.github.io/2019/05/08/rocketmq-store/index.png">
 <meta property="og:image" content="https://moonrunwater.github.io/2019/05/08/rocketmq-store/index-detail.png">
-<meta property="og:updated_time" content="2019-05-12T15:42:52.077Z">
+<meta property="og:updated_time" content="2019-06-04T11:40:09.638Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="rocketmq 存储文件详解">
-<meta name="twitter:description" content="rocketmq 存储文件详解概览 rocketmq 默认存储根目录是 $HOME/store，可以在修改配置文件中进行更改1storePathRootDir=$HOME/store rocketmq 默认存储根目录结构，如下 1234567891011121314151617181920212223242526272829303132333435363738394041424344# tree">
+<meta name="twitter:description" content="rocketmq 存储文件详解概览 rocketmq 默认存储根目录是 $HOME/store，可以在修改配置文件中进行更改1storePathRootDir=$HOME/store">
 <meta name="twitter:image" content="https://moonrunwater.github.io/2019/05/08/rocketmq-store/rocketmq-store.png">
 
 
@@ -376,7 +376,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-12 23:42:52" itemprop="dateModified" datetime="2019-05-12T23:42:52+08:00">2019-05-12</time>
+                <time title="修改时间：2019-06-04 19:40:09" itemprop="dateModified" datetime="2019-06-04T19:40:09+08:00">2019-06-04</time>
               
             
           </span>
@@ -440,6 +440,7 @@
       
         <h1 id="rocketmq-存储文件详解"><a href="#rocketmq-存储文件详解" class="headerlink" title="rocketmq 存储文件详解"></a>rocketmq 存储文件详解</h1><h2 id="概览"><a href="#概览" class="headerlink" title="概览"></a>概览</h2><p><img src="/2019/05/08/rocketmq-store/rocketmq-store.png" alt="rocketmq-store"></p>
 <p>rocketmq 默认存储根目录是 <code>$HOME/store</code>，可以在修改配置文件中进行更改<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">storePathRootDir=<span class="variable">$HOME</span>/store</span><br></pre></td></tr></table></figure></p>
+<a id="more"></a>
 <p>rocketmq 默认存储根目录结构，如下</p>
 <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"># tree store</span><br><span class="line">store</span><br><span class="line">├── abort</span><br><span class="line">├── checkpoint</span><br><span class="line">├── commitlog</span><br><span class="line">│   └── 00000000000000000000</span><br><span class="line">├── config</span><br><span class="line">│   ├── consumerOffset.json</span><br><span class="line">│   ├── consumerOffset.json.bak</span><br><span class="line">│   ├── delayOffset.json</span><br><span class="line">│   ├── delayOffset.json.bak</span><br><span class="line">│   ├── subscriptionGroup.json</span><br><span class="line">│   ├── subscriptionGroup.json.bak</span><br><span class="line">│   ├── topics.json</span><br><span class="line">│   └── topics.json.bak</span><br><span class="line">├── consumequeue</span><br><span class="line">│   ├── artisanDetailBrowseMqTopic</span><br><span class="line">│   │   ├── 0</span><br><span class="line">│   │   │   └── 00000000000000000000</span><br><span class="line">│   │   ├── 1</span><br><span class="line">│   │   │   └── 00000000000000000000</span><br><span class="line">│   │   ├── 2</span><br><span class="line">│   │   │   └── 00000000000000000000</span><br><span class="line">│   │   └── 3</span><br><span class="line">│   │       └── 00000000000000000000</span><br><span class="line">│   ├── productBrowsingTopic</span><br><span class="line">│   │   ├── 0</span><br><span class="line">│   │   │   └── 00000000000000000000</span><br><span class="line">│   │   ├── 1</span><br><span class="line">│   │   │   └── 00000000000000000000</span><br><span class="line">│   │   ├── 2</span><br><span class="line">│   │   │   └── 00000000000000000000</span><br><span class="line">│   │   └── 3</span><br><span class="line">│   │       └── 00000000000000000000</span><br><span class="line">...</span><br><span class="line">│   └── userLevelTopic</span><br><span class="line">│       ├── 0</span><br><span class="line">│       │   └── 00000000000000000000</span><br><span class="line">│       ├── 1</span><br><span class="line">│       │   └── 00000000000000000000</span><br><span class="line">│       └── 2</span><br><span class="line">│           └── 00000000000000000000</span><br><span class="line">└── index</span><br><span class="line">    └── 20180418154913712</span><br></pre></td></tr></table></figure>
 <p>rocketmq 存盘的数据有 6 类，其中有 3 类小文件：</p>
