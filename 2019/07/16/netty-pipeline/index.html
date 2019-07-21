@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.1" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.1" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.4.1',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="摘要:   netty 源码版本 io.netty:netty-all:4.1.32.Final">
+<meta name="keywords" content="netty,event-driven,pipeline">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Netty Pipeline">
+<meta property="og:url" content="https://moonrunwater.github.io/2019/07/16/netty-pipeline/index.html">
+<meta property="og:site_name" content="moonrunwater">
+<meta property="og:description" content="摘要:   netty 源码版本 io.netty:netty-all:4.1.32.Final">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://moonrunwater.github.io/2019/07/16/netty-pipeline/Channel-Pipeline-Context-Handler.png">
+<meta property="og:updated_time" content="2019-07-19T08:42:11.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Netty Pipeline">
+<meta name="twitter:description" content="摘要:   netty 源码版本 io.netty:netty-all:4.1.32.Final">
+<meta name="twitter:image" content="https://moonrunwater.github.io/2019/07/16/netty-pipeline/Channel-Pipeline-Context-Handler.png">
+
+
+
+
+
+
+  <link rel="canonical" href="https://moonrunwater.github.io/2019/07/16/netty-pipeline/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Netty Pipeline | moonrunwater</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <a href="https://github.com/moonrunwater" class="github-corner" aria-label="View source on Github"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">moonrunwater</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">路漫漫其修远兮，吾将上下而求索</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+    <a href="/about/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-user"></i> <br />关于</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://moonrunwater.github.io/2019/07/16/netty-pipeline/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="moonrunwater">
+      <meta itemprop="description" content="学而不思则罔，思而不学则殆">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="moonrunwater">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Netty Pipeline
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-07-16 08:53:42" itemprop="dateCreated datePublished" datetime="2019-07-16T08:53:42+08:00">2019-07-16</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-07-19 16:42:11" itemprop="dateModified" datetime="2019-07-19T16:42:11+08:00">2019-07-19</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/netty/" itemprop="url" rel="index"><span itemprop="name">netty</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2019/07/16/netty-pipeline/" class="leancloud_visitors" data-flag-title="Netty Pipeline">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>摘要: </p>
+<blockquote>
+<p>netty 源码版本 <code>io.netty:netty-all:4.1.32.Final</code></p>
+</blockquote>
+<a id="more"></a>
+<h2 id="Channel、ChannelPipeline、ChannelHandlerContext、ChannelHandler"><a href="#Channel、ChannelPipeline、ChannelHandlerContext、ChannelHandler" class="headerlink" title="Channel、ChannelPipeline、ChannelHandlerContext、ChannelHandler"></a>Channel、ChannelPipeline、ChannelHandlerContext、ChannelHandler</h2><h3 id="Channel"><a href="#Channel" class="headerlink" title="Channel"></a>Channel</h3><p>AbstractChannel</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractChannel</span> <span class="keyword">extends</span> <span class="title">DefaultAttributeMap</span> <span class="keyword">implements</span> <span class="title">Channel</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Channel parent;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ChannelId id;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Unsafe unsafe;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> DefaultChannelPipeline pipeline;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Creates a new instance.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> parent</span></span><br><span class="line"><span class="comment">     *        the parent of this channel. &#123;<span class="doctag">@code</span> null&#125; if there's no parent.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="title">AbstractChannel</span><span class="params">(Channel parent)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.parent = parent;</span><br><span class="line">        id = newId();</span><br><span class="line">        unsafe = newUnsafe();</span><br><span class="line">        pipeline = newChannelPipeline();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Returns a new &#123;<span class="doctag">@link</span> DefaultChannelPipeline&#125; instance.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> DefaultChannelPipeline <span class="title">newChannelPipeline</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> DefaultChannelPipeline(<span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ChannelPipeline <span class="title">pipeline</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> pipeline;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="ChannelPipeline"><a href="#ChannelPipeline" class="headerlink" title="ChannelPipeline"></a>ChannelPipeline</h3><h3 id="ChannelHandlerContext"><a href="#ChannelHandlerContext" class="headerlink" title="ChannelHandlerContext"></a>ChannelHandlerContext</h3><h3 id="ChannelHandler"><a href="#ChannelHandler" class="headerlink" title="ChannelHandler"></a>ChannelHandler</h3><p>Handles an I/O event or intercepts an I/O operation, and forwards it to its next handler in its ChannelPipeline.</p>
+<h3 id="Channel-Pipeline-Context-Handler-关系"><a href="#Channel-Pipeline-Context-Handler-关系" class="headerlink" title="Channel-Pipeline-Context-Handler 关系"></a>Channel-Pipeline-Context-Handler 关系</h3><p><img src="/2019/07/16/netty-pipeline/Channel-Pipeline-Context-Handler.png" alt="Channel-Pipeline-Context-Handler"></p>
+<p>Channel 和 ChannelPipeline 是一对一的关联关系，而 ChannelPipeline 内部的多个 ChannelHandlerContext 形成了双向链表（链表的头是 HeadContext, 链表的尾是 TailContext），Context 只是对 ChannelHandler 的封装。</p>
+<p>Servlet 的 Filter<br>Spring MVC 的 Intercepter</p>
+<h2 id="ChannelPipeline-添加-ChannelHandler"><a href="#ChannelPipeline-添加-ChannelHandler" class="headerlink" title="ChannelPipeline 添加 ChannelHandler"></a>ChannelPipeline 添加 ChannelHandler</h2><h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ch.pipeline()</span><br><span class="line">        <span class="comment">// Decoders</span></span><br><span class="line">        .addLast(<span class="string">"frameDecoder"</span>, <span class="keyword">new</span> DelimiterBasedFrameDecoder(Commons.MAX_FRAME_LENGTH, Delimiters.lineDelimiter()))</span><br><span class="line">        .addLast(<span class="string">"stringDecoder"</span>, Commons.STRING_DECODER)</span><br><span class="line">        <span class="comment">// Encoder</span></span><br><span class="line">        .addLast(<span class="string">"stringEncoder"</span>, Commons.STRING_ENCODER)</span><br><span class="line">        <span class="comment">// log just for dev/test env, NOT product env</span></span><br><span class="line">        .addLast(Commons.LOGGING_HANDLER_INFO)</span><br><span class="line">        <span class="comment">// business logic ChannelHandler</span></span><br><span class="line">        .addLast(BUSINESS_EVENT_LOOP_GROUP, <span class="string">"echoServerHandler"</span>, ECHO_SERVER_HANDLER);</span><br></pre></td></tr></table></figure>
+<h3 id="DefaultChannelPipeline-addLast"><a href="#DefaultChannelPipeline-addLast" class="headerlink" title="DefaultChannelPipeline#addLast"></a>DefaultChannelPipeline#addLast</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> ChannelPipeline <span class="title">addLast</span><span class="params">(EventExecutorGroup group, String name, ChannelHandler handler)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> AbstractChannelHandlerContext newCtx;</span><br><span class="line">    <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</span><br><span class="line">        checkMultiplicity(handler);</span><br><span class="line"></span><br><span class="line">        newCtx = newContext(group, filterName(name, handler), handler);</span><br><span class="line"></span><br><span class="line">        addLast0(newCtx);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// If the registered is false it means that the channel was not registered on an eventloop yet.</span></span><br><span class="line">        <span class="comment">// In this case we add the context to the pipeline and add a task that will call</span></span><br><span class="line">        <span class="comment">// ChannelHandler.handlerAdded(...) once the channel is registered.</span></span><br><span class="line">        <span class="keyword">if</span> (!registered) &#123;</span><br><span class="line">            newCtx.setAddPending();</span><br><span class="line">            callHandlerCallbackLater(newCtx, <span class="keyword">true</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        EventExecutor executor = newCtx.executor();</span><br><span class="line">        <span class="keyword">if</span> (!executor.inEventLoop()) &#123;</span><br><span class="line">            newCtx.setAddPending();</span><br><span class="line">            executor.execute(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                    callHandlerAdded0(newCtx);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    callHandlerAdded0(newCtx);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">addLast0</span><span class="params">(AbstractChannelHandlerContext newCtx)</span> </span>&#123;</span><br><span class="line">    AbstractChannelHandlerContext prev = tail.prev;</span><br><span class="line">    newCtx.prev = prev;</span><br><span class="line">    newCtx.next = tail;</span><br><span class="line">    prev.next = newCtx;</span><br><span class="line">    tail.prev = newCtx;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们知道 AbstractChannelHandlerContext 中有 inbound 和 outbound 两个 boolean 变量, 分别用于标识 Context 所对应的 handler 的类型, 即:</p>
+<p>inbound 为真时, 表示对应的 ChannelHandler 实现了 ChannelInboundHandler 方法.</p>
+<p>outbound 为真时, 表示对应的 ChannelHandler 实现了 ChannelOutboundHandler 方法.</p>
+<p>注意, 如果我们捕获了一个事件, 并且想让这个事件继续传递下去, 那么需要调用 Context 相应的传播方法.</p>
+<h2 id="pipeline-中的-inbound-事件传播"><a href="#pipeline-中的-inbound-事件传播" class="headerlink" title="pipeline 中的 inbound 事件传播"></a>pipeline 中的 inbound 事件传播</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// DefaultChannelPipeline#fireChannelActive</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> ChannelPipeline <span class="title">fireChannelActive</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        AbstractChannelHandlerContext.invokeChannelActive(head);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// AbstractChannelHandlerContext#invokeChannelActive(AbstractChannelHandlerContext)</span></span><br><span class="line">    <span class="comment">// 静态方法调用传进来 context 的 invoker 方法</span></span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">invokeChannelActive</span><span class="params">(<span class="keyword">final</span> AbstractChannelHandlerContext next)</span> </span>&#123;</span><br><span class="line">        EventExecutor executor = next.executor();</span><br><span class="line">        <span class="keyword">if</span> (executor.inEventLoop()) &#123;</span><br><span class="line">            next.invokeChannelActive();</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            executor.execute(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                    next.invokeChannelActive();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// invoker 方法内部会调用该 context 所包含的 handler 的真正方法</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">invokeChannelActive</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (invokeHandler()) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                ((ChannelInboundHandler) handler()).channelActive(<span class="keyword">this</span>);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">                notifyHandlerException(t);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            fireChannelActive();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// DefaultChannelPipeline.HeadContext#channelActive</span></span><br><span class="line">    <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">HeadContext</span> <span class="keyword">extends</span> <span class="title">AbstractChannelHandlerContext</span></span></span><br><span class="line"><span class="class">            <span class="keyword">implements</span> <span class="title">ChannelOutboundHandler</span>, <span class="title">ChannelInboundHandler</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        HeadContext(DefaultChannelPipeline pipeline) &#123;</span><br><span class="line">            <span class="keyword">super</span>(pipeline, <span class="keyword">null</span>, HEAD_NAME, <span class="keyword">true</span>, <span class="keyword">true</span>);</span><br><span class="line">            unsafe = pipeline.channel().unsafe();</span><br><span class="line">            setAddComplete();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// HeadContext 的 handler 就是 this 自己</span></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> ChannelHandler <span class="title">handler</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 关键点，调用 ctx.fireChannelActive() 才能继续调用下一个节点</span></span><br><span class="line">        <span class="comment">// handler 调用结束后，如果还需要继续向后传递，就调用 context 的 fire*** 方法</span></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">channelActive</span><span class="params">(ChannelHandlerContext ctx)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">            ctx.fireChannelActive();</span><br><span class="line">            readIfIsAutoRead();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// AbstractChannelHandlerContext#fireChannelActive</span></span><br><span class="line">    <span class="comment">// 找到下一个节点之后，执行 invokeChannelActive(next)</span></span><br><span class="line">    <span class="comment">// 递归调用，直到最后一个 inbound 节点，即 tail 节点</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ChannelHandlerContext <span class="title">fireChannelActive</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        invokeChannelActive(findContextInbound());</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 遍历双向链表的下一个节点，直到下一个节点为 inbound</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> AbstractChannelHandlerContext <span class="title">findContextInbound</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        AbstractChannelHandlerContext ctx = <span class="keyword">this</span>;</span><br><span class="line">        <span class="keyword">do</span> &#123;</span><br><span class="line">            ctx = ctx.next;</span><br><span class="line">        &#125; <span class="keyword">while</span> (!ctx.inbound);</span><br><span class="line">        <span class="keyword">return</span> ctx;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// DefaultChannelPipeline.TailContext#channelActive</span></span><br><span class="line">    <span class="comment">// Tail 节点的该方法为空，结束调用（Tail 节点的大部分方法体为空，作用即终止事件的传播）</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">channelActive</span><span class="params">(ChannelHandlerContext ctx)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        onUnhandledInboundChannelActive();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onUnhandledInboundChannelActive</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>同理，可以分析所有 inbound 事件的传播，正常情况下，即用户如果不覆盖每个节点的事件传播操作，所有 inbound 事件最后都落到 Tail 节点上。</p>
+<h2 id="pipeline-中的-outbound-事件传播"><a href="#pipeline-中的-outbound-事件传播" class="headerlink" title="pipeline 中的 outbound 事件传播"></a>pipeline 中的 outbound 事件传播</h2><h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><blockquote>
+<p>本文参考了互联网上大家的分享，就不一一列举，在此一并谢过。<br>也希望本文，能对大家有所帮助，若有错误，还请谅解、指正。</p>
+</blockquote>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/netty/" rel="tag"># netty</a>
+          
+            <a href="/tags/event-driven/" rel="tag"># event-driven</a>
+          
+            <a href="/tags/pipeline/" rel="tag"># pipeline</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/05/08/rocketmq-store/" rel="next" title="rocketmq 存储文件详解">
+                <i class="fa fa-chevron-left"></i> rocketmq 存储文件详解
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpeg"
+                alt="moonrunwater" />
+            
+              <p class="site-author-name" itemprop="name">moonrunwater</p>
+              <p class="site-description motion-element" itemprop="description">学而不思则罔，思而不学则殆</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">4</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Channel、ChannelPipeline、ChannelHandlerContext、ChannelHandler"><span class="nav-number">1.</span> <span class="nav-text">Channel、ChannelPipeline、ChannelHandlerContext、ChannelHandler</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Channel"><span class="nav-number">1.1.</span> <span class="nav-text">Channel</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ChannelPipeline"><span class="nav-number">1.2.</span> <span class="nav-text">ChannelPipeline</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ChannelHandlerContext"><span class="nav-number">1.3.</span> <span class="nav-text">ChannelHandlerContext</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ChannelHandler"><span class="nav-number">1.4.</span> <span class="nav-text">ChannelHandler</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Channel-Pipeline-Context-Handler-关系"><span class="nav-number">1.5.</span> <span class="nav-text">Channel-Pipeline-Context-Handler 关系</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ChannelPipeline-添加-ChannelHandler"><span class="nav-number">2.</span> <span class="nav-text">ChannelPipeline 添加 ChannelHandler</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#示例"><span class="nav-number">2.1.</span> <span class="nav-text">示例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DefaultChannelPipeline-addLast"><span class="nav-number">2.2.</span> <span class="nav-text">DefaultChannelPipeline#addLast</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pipeline-中的-inbound-事件传播"><span class="nav-number">3.</span> <span class="nav-text">pipeline 中的 inbound 事件传播</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pipeline-中的-outbound-事件传播"><span class="nav-number">4.</span> <span class="nav-text">pipeline 中的 outbound 事件传播</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-number">5.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">moonrunwater</span>
+
+  
+
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Muse</a></div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "uCxAlVjLtxxWS7hWJYI28kPN-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "uCxAlVjLtxxWS7hWJYI28kPN-gzGzoHsz",
+                'X-LC-Key': "YxJ09zFe3juR2BIxGN0hKKpw",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
